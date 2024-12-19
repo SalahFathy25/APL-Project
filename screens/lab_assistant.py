@@ -90,13 +90,15 @@ class GUILabAssistant:
         validate_age = (self.root.register(self.is_valid_age), "%P")
 
         for idx, label in enumerate(labels):
-            tk.Label(input_frame, text=label, bg="#2C3E50",fg="white", font=("times", 12, "bold")).grid(row=idx, column=0, sticky="e")
+            tk.Label(input_frame, text=label, bg="#2C3E50", fg="white", font=("times", 12, "bold")).grid(row=idx, column=0, sticky="e")
             if label == "Gender":
-                entry = ttk.Combobox(input_frame, values=["Male", "Female", "Other"], state="readonly", width=28)
+                entry = ttk.Combobox(input_frame, values=["Male", "Female", "Other"], state="readonly", width=31)
             elif label == "Age":
-                entry = tk.Entry(input_frame, width=30, font=("times", 12), relief="solid", validate="key", validatecommand=validate_age)
+                entry = tk.Entry(input_frame, width=26, font=("times", 12), relief="solid", validate="key", validatecommand=validate_age)
+            elif label == "Blood Group":
+                entry = ttk.Combobox(input_frame, values=["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], state="readonly", width=31)
             else:
-                entry = tk.Entry(input_frame, width=30, font=("times", 12), relief="solid")
+                entry = tk.Entry(input_frame, width=26, font=("times", 12), relief="solid")
             entry.grid(row=idx, column=1, padx=5, pady=20)
             self.entries[label.lower().replace(" ", "_")] = entry
 

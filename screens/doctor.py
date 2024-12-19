@@ -72,10 +72,13 @@ class DoctorManagementApp:
         ]
 
         for i, (label, var) in enumerate(fields):
-            Label(form_frame, text=label, bg="#2C3E50", fg="white", font=("Helvetica", 12)).grid(row=i, column=0, padx=10, pady=5, sticky=W)
+            Label(form_frame, text=label, bg="#2C3E50", fg="white", font=("Helvetica", 12)).grid(row=i, column=0, padx=10, pady=5, sticky=W )
             if label == "Gender":
-                widget = ttk.Combobox(form_frame, textvariable=var, state="readonly", width=23, font=("Helvetica", 12))
+                widget = ttk.Combobox(form_frame, textvariable=var, state="readonly", width=20, font=("Helvetica", 12))
                 widget["values"] = ("Male", "Female", "Other")
+            elif label == "Blood Group":
+                widget = ttk.Combobox(form_frame, textvariable=var, state="readonly", width=20, font=("Helvetica", 12))
+                widget["values"] = ("A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-")
             else:
                 widget = Entry(form_frame, textvariable=var, width=25, font=("Helvetica", 12))
             widget.grid(row=i, column=1, padx=10, pady=5)
@@ -90,6 +93,7 @@ class DoctorManagementApp:
             form_frame, text="Delete Doctor", command=self.delete_doctor,
             bg="#E74C3C", fg="white", font=("Helvetica", 12, "bold"), cursor="hand2"
         ).grid(row=len(fields) + 1, columnspan=2, pady=10)
+
 
     def create_table_frame(self):
         table_frame = Frame(self.root, bg="#ECF0F1" , width=500)
