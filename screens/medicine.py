@@ -61,13 +61,13 @@ class GUIMedicine:
 
     def create_input_fields(self):
         input_frame = tk.Frame(self.root, bg="#2C3E50")
-        input_frame.pack(side="top", fill="x")
+        input_frame.pack(side="top", fill="y")
 
         labels = ["Name", "Dosage", "Price"]
         self.entries = {}
 
         for idx, label in enumerate(labels):
-            tk.Label(input_frame, text=label, bg="#2C3E50", font=("times", 12,"bold")).grid(row=idx, column=0, sticky="e")
+            tk.Label(input_frame, text=label, bg="#2C3E50",foreground="white", font=("times", 12,"bold")).grid(row=idx, column=0)
             if label == "Dosage":
                 entry = ttk.Combobox(input_frame, values=["Tablets", "Capsules", "Poders", "Oral Solution", "Injectable Solutions"], state="readonly", width=37)
             else:
@@ -77,7 +77,7 @@ class GUIMedicine:
 
         self.add_button = tk.Button(input_frame, text="Add Medicine", command=self.add_medicine, bg="#89CFF0", bd=10,
                                     relief="flat", activebackground="#E0FAFF", activeforeground="white",
-                                    font=("times", 10, "bold", "italic"), cursor="circle", state="normal", pady=10)
+                                    font=("times", 12, "bold"), cursor="hand2", state="normal", pady=5)
         self.add_button.grid(row=len(labels), column=1, pady=10)
 
     def create_table(self):

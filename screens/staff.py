@@ -76,7 +76,7 @@ class StaffApp:
         self.action_button.grid(row=len(fields), columnspan=2, pady=10)
 
         self.delete_button = Button(
-            form_frame, text="Delete Staff", font=("Helvetica", 12, "bold"), bg="#FF9999", bd=10, relief="flat", 
+            form_frame, text="Delete Staff", font=("Helvetica", 12, "bold"), bg="#FF9999", bd=10, relief="flat",
             activebackground="#E74C3C", activeforeground="white", cursor="hand2", state="disabled", command=self.delete_staff
         )
         self.delete_button.grid(row=len(fields) + 1, columnspan=2, pady=10)
