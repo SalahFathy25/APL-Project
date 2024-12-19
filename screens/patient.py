@@ -85,7 +85,7 @@ class InsertWindow:
         tkinter.Label(self.window, text = "Gender", width = 25 , bg="#2C3E50" , fg="white" , font=("Helvetica", 10 , "bold")).grid(pady = 5, column = 1, row = 7)
         tkinter.Label(self.window, text = "Home Address", width = 25 , bg="#2C3E50" , fg="white" , font=("Helvetica", 10 , "bold")).grid(pady = 5, column = 1, row = 8)
         tkinter.Label(self.window, text = "Phone Number", width = 25 , bg="#2C3E50" , fg="white" , font=("Helvetica", 10 , "bold")).grid(pady = 5, column = 1, row = 9)
-        tkinter.Label(self.window, text = "Email ID", width = 25 , bg="#2C3E50" , fg="white" , font=("Helvetica", 10 , "bold")).grid(pady = 5, column = 1, row = 10)
+        tkinter.Label(self.window, text = "Email", width = 25 , bg="#2C3E50" , fg="white" , font=("Helvetica", 10 , "bold")).grid(pady = 5, column = 1, row = 10)
         tkinter.Label(self.window, text = "Blood Group", width = 25 , bg="#2C3E50" , fg="white" , font=("Helvetica", 10 , "bold")).grid(pady = 5, column = 1, row = 11)
         tkinter.Label(self.window, text = "Patient History", width = 25 , bg="#2C3E50" , fg="white" , font=("Helvetica", 10 , "bold")).grid(pady = 5, column = 1, row = 12)
         tkinter.Label(self.window, text = "Doctor", width = 25 , bg="#2C3E50" , fg="white" , font=("Helvetica", 10 , "bold")).grid(pady = 5, column = 1, row = 13)
@@ -185,7 +185,7 @@ class UpdateWindow:
         tkinter.Label(self.window, text = "Gender", width = 25, bg="#2C3E50" , fg="white" , font=("Helvetica", 10 , "bold")).grid(pady = 5, column = 1, row = 7)
         tkinter.Label(self.window, text = "Home Address", width = 25, bg="#2C3E50" , fg="white" , font=("Helvetica", 10 , "bold")).grid(pady = 5, column = 1, row = 8)
         tkinter.Label(self.window, text = "Phone Number", width = 25, bg="#2C3E50" , fg="white" , font=("Helvetica", 10 , "bold")).grid(pady = 5, column = 1, row = 9)
-        tkinter.Label(self.window, text = "Email ID", width = 25, bg="#2C3E50" , fg="white" , font=("Helvetica", 10 , "bold")).grid(pady = 5, column = 1, row = 10)
+        tkinter.Label(self.window, text = "Email", width = 25, bg="#2C3E50" , fg="white" , font=("Helvetica", 10 , "bold")).grid(pady = 5, column = 1, row = 10)
         tkinter.Label(self.window, text = "Blood Group", width = 25, bg="#2C3E50" , fg="white" , font=("Helvetica", 10 , "bold")).grid(pady = 5, column = 1, row = 11)
         tkinter.Label(self.window, text = "Patient History", width = 25, bg="#2C3E50" , fg="white" , font=("Helvetica", 10 , "bold")).grid(pady = 5, column = 1, row = 12)
         tkinter.Label(self.window, text = "Doctor", width = 25, bg="#2C3E50" , fg="white" , font=("Helvetica", 10 , "bold")).grid(pady = 5, column = 1, row = 13)
@@ -282,7 +282,7 @@ class DatabaseView:
         self.databaseView.heading("gender", text = "Gender")
         self.databaseView.heading("address", text = "Home Address")
         self.databaseView.heading("phone", text = "Phone Number")
-        self.databaseView.heading("email", text = "Email ID")
+        self.databaseView.heading("email", text = "Email")
         self.databaseView.heading("bloodGroup", text = "Blood Group")
         self.databaseView.heading("history", text = "History")
         self.databaseView.heading("doctor", text = "Doctor")
@@ -334,17 +334,21 @@ class SearchDeleteWindow:
         self.database = Database()
         self.data = self.database.Search(self.idEntry.get())
         if not self.data:
-            tkinter.messagebox.messagebox.showwarning("Not Found", "The ID you entered was not found.")
+            tkinter.messagebox.showwarning("Not Found", "The ID you entered was not found.")
         else:
             self.databaseView = DatabaseView(self.data)
 
     def Delete(self):
+        record_id = self.idEntry.get()
         self.database = Database()
-        self.database.Delete(self.idEntry.get())
-        if not "SUCCESS":
-            tkinter.messagebox.messagebox.showwarning("Deletion Failed", "The ID you entered was not found or couldn't be deleted.")
+        if not record_id:
+                tkinter.messagebox.showwarning("Invalid Input", "Please enter a valid ID.")
+                return
+        success = self.database.Delete(record_id)
+        if success:
+            tkinter.messagebox.showinfo("Success", "The record was successfully deleted.")
         else:
-            tkinter.messagebox.messagebox.showinfo("Success", "The record was successfully deleted.")
+            tkinter.messagebox.showwarning("Deletion Failed", "The ID you entered was not found or couldn't be deleted.")
 
 class HomePage:
     def __init__(self):
@@ -398,5 +402,6 @@ class HomePage:
         self.database = Database()
         self.data = self.database.Display()
         self.displayWindow = DatabaseView(self.data)
+        self.displayWindow.configure(bg="#2C3E50")
 
 homePage = HomePage()

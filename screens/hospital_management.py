@@ -1,56 +1,12 @@
 import sqlite3
-
-DATABASE = "DB/projectDatabase.db"
-
-class HospitalDB:
-    def __init__(self, db_name=DATABASE):
-        self.conn = sqlite3.connect(db_name)
-        self.cursor = self.conn.cursor()
-        self.create_tables()
-
-    def create_tables(self):
-        self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS Hospital (
-                h_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                h_name TEXT NOT NULL,
-                h_address TEXT
-            )
-        """)
-
-        self.conn.commit()
-
-    def execute_query(self, query, params=()):
-        self.cursor.execute(query, params)
-        self.conn.commit()
-
-    def fetch_query(self, query, params=()):
-        self.cursor.execute(query, params)
-        return self.cursor.fetchall()
-
-    def close(self):
-        self.conn.close()
-
-class Hospital:
-    def __init__(self, db):
-        self.db = db
-
-    def create_hospital(self, h_name, h_address):
-        self.execute_query("INSERT INTO Hospital (h_name, h_address) VALUES (?, ?)", (h_name, h_address))
-
-    def read_hospital(self, h_id):
-       return self.fetch_query("SELECT * FROM Hospital WHERE h_id = ?", (h_id,))
-
-    def update_hospital(self, h_id, field, value):
-        self.execute_query(f"UPDATE Hospital SET {field} = ? WHERE h_id = ?", (value, h_id))
-
-    def delete_hospital(self, h_id):
-        self.execute_query("DELETE FROM Hospital WHERE h_id = ?", (h_id,))
-
-#GUI for Hospital
 import tkinter as tk
 from tkinter import messagebox, ttk
-import sqlite3
-from PIL import Image, ImageTk
+from tkinter.ttk import Style
+
+BUTTON_COLOR = '#1ABC9C'
+HOVER_COLOR = '#1ABC9A'
+FONT = ("Helvetica", 10, 'bold')
+LABEL_FONT = ("Arial", 10, 'bold')
 
 class HospitalDB:
     def __init__(self, db_name="projectDatabase.db"):
@@ -99,58 +55,64 @@ class HospitalApp(tk.Tk):
     def __init__(self, db):
         super().__init__()
         self.title("Hospital Management System")
-        self.geometry("800x600")
+        self.geometry("700x700")
         self.hospital_db = db
         self.hospital = Hospital(db)
-
-        self.original_background_image = Image.open("images\hoss.jpg")
-        self.background_image = ImageTk.PhotoImage(self.original_background_image)
-
-        self.background_label = tk.Label(self, image=self.background_image)
-        self.background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
         self.create_widgets()
         self.populate_table()
 
     def create_widgets(self):
-        button_style = {'bg': 'skyblue', 'font': ('Arial', 14, 'bold'), 'padx': 15, 'pady': 10}
+        self.config(bg='#2C3E50')
 
-        # Hospital Name Section
-        self.label_name = tk.Label(self, text="Hospital Name:", bg='lightblue', font=("Arial", 12, 'bold'))
-        self.label_name.pack(pady=5, anchor='w')
+        self.grid_rowconfigure(6, weight=1)
 
-        self.entry_name = tk.Entry(self, font=("Arial", 14), width=25)
-        self.entry_name.pack(pady=5, anchor='w')
+        self.label_name = tk.Label(self, text="Hospital Name:", bg='#2C3E50', fg="white", font=LABEL_FONT, width=20)
+        self.label_name.grid(row=0, column=0, pady=2, sticky="n", padx=5)
 
-        # Hospital Address Section
-        self.label_address = tk.Label(self, text="Hospital Address:", bg='lightblue', font=("Arial", 12, 'bold'))
-        self.label_address.pack(pady=5, anchor='w')
+        self.entry_name = tk.Entry(self, font=("Arial", 14), width=20, bd=3)
+        self.entry_name.grid(row=0, column=1, pady=2, padx=5, sticky="n")
 
-        self.entry_address = tk.Entry(self, font=("Arial", 14), width=25)
-        self.entry_address.pack(pady=5, anchor='w')
+        self.label_address = tk.Label(self, text="Hospital Address:", bg='#2C3E50', fg="white", font=LABEL_FONT, width=20)
+        self.label_address.grid(row=1, column=0, pady=2, sticky="n", padx=5)
 
-        # Action Buttons
+        self.entry_address = tk.Entry(self, font=("Arial", 14), width=20, bd=3)
+        self.entry_address.grid(row=1, column=1, pady=2, padx=5, sticky="n")
+
         self.button_create = self.create_styled_button("Create Hospital", self.create_hospital)
-        self.button_update = self.create_styled_button("Update Hospital", self.update_hospital)
-        self.button_delete = self.create_styled_button("Delete Hospital", self.delete_hospital)
-        self.next_page_button = self.create_styled_button("More Features", self.show_more_features)
+        self.button_create.grid(row=2, column=0, columnspan=2, pady=10, padx=10, sticky="n")
 
-        # Treeview to display hospital data
-        self.tree = ttk.Treeview(self, columns=("Name", "Address"), show='headings')
+        self.button_update = self.create_styled_button("Update Hospital", self.update_hospital)
+        self.button_update.grid(row=3, column=0, columnspan=2, pady=10, padx=10, sticky="n")
+
+        self.button_delete = self.create_styled_button("Delete Hospital", self.delete_hospital)
+        self.button_delete.grid(row=4, column=0, columnspan=2, pady=10, padx=10, sticky="n")
+
+        self.next_page_button = self.create_styled_button("More Features", self.show_more_features)
+        self.next_page_button.grid(row=5, column=0, columnspan=2, pady=10, padx=10, sticky="n")
+
+        style = Style()
+        style.configure("Treeview.Heading", font=("Arial", 12, "bold"), background="#1ABC9C", foreground="black")
+        style.configure("Treeview", font=("Arial", 10), rowheight=30, fieldbackground="#EAF2F8")
+        style.map("Treeview", background=[("selected", "#AED6F1")])
+
+        self.tree = ttk.Treeview(self, columns=("Name", "Address"), show='headings', style="Treeview")
         self.tree.heading("Name", text="Hospital Name")
         self.tree.heading("Address", text="Hospital Address")
-        self.tree.pack(pady=10, anchor='w', fill='x')
+        self.tree.grid(row=6, column=0, columnspan=2, pady=5, sticky="ew", padx=15)
 
+        self.tree.tag_configure("evenrow", background="#f2f2f2")
+        self.tree.tag_configure("oddrow", background="#ffffff")
         self.tree.bind("<ButtonRelease-1>", self.on_tree_select)
 
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
+
     def create_styled_button(self, text, command):
-        button = tk.Button(self, text=text, command=command, bg='skyblue', activebackground='lightblue',
-                            font=("Arial", 14, 'bold'), padx=15, pady=10, relief='raised', bd=3)
-        button.pack(pady=5, anchor='w')
-
-        button.bind("<Enter>", lambda event: button.configure(bg='deepskyblue'))
-        button.bind("<Leave>", lambda event: button.configure(bg='skyblue'))
-
+        button = tk.Button(self, text=text, command=command, bg=BUTTON_COLOR, activebackground=HOVER_COLOR, fg="white",
+                            font=("Arial", 10, 'bold'), padx=6, pady=3, relief='raised', bd=2, width=30)
+        button.bind("<Enter>", lambda event: button.configure(bg=HOVER_COLOR))
+        button.bind("<Leave>", lambda event: button.configure(bg=BUTTON_COLOR))
         return button
 
     def on_tree_select(self, event):
@@ -174,7 +136,6 @@ class HospitalApp(tk.Tk):
     def update_hospital(self):
         selected_item = self.tree.selection()
         if selected_item:
-
             original_hospital_data = self.tree.item(selected_item[0], "values")
             original_name = original_hospital_data[0]
             original_address = original_hospital_data[1]
@@ -183,10 +144,8 @@ class HospitalApp(tk.Tk):
             new_address = self.entry_address.get()
 
             if new_name or new_address:
-
                 updated_name = new_name if new_name else original_name
                 updated_address = new_address if new_address else original_address
-
 
                 self.hospital.update_hospital(original_name, updated_name, updated_address)
 
@@ -210,8 +169,9 @@ class HospitalApp(tk.Tk):
         for row in self.tree.get_children():
             self.tree.delete(row)
 
-        for hospital in self.hospital.get_all_hospitals():
-            self.tree.insert("", tk.END, values=hospital)
+        for i, hospital in enumerate(self.hospital.get_all_hospitals()):
+            tag = "evenrow" if i % 2 == 0 else "oddrow"
+            self.tree.insert("", tk.END, values=hospital, tags=(tag,))
 
     def show_more_features(self):
         messagebox.showinfo("More Features", "This is where you could implement more functionalities!")

@@ -6,7 +6,7 @@ from PIL import Image, ImageTk
 ##اعمل bloodGroup كويس
 ## اعمل تأثيرات لكل الزراير
 
-##Hospital / Patient 
+##Hospital
 def open_gui(file_name):
     try:
         os.system(f"python {file_name}")
