@@ -90,7 +90,7 @@ class GUILabAssistant:
         validate_age = (self.root.register(self.is_valid_age), "%P")
 
         for idx, label in enumerate(labels):
-            tk.Label(input_frame, text=label, bg="#2C3E50", font=("times", 12, "bold")).grid(row=idx, column=0, sticky="e")
+            tk.Label(input_frame, text=label, bg="#2C3E50",fg="white", font=("times", 12, "bold")).grid(row=idx, column=0, sticky="e")
             if label == "Gender":
                 entry = ttk.Combobox(input_frame, values=["Male", "Female", "Other"], state="readonly", width=28)
             elif label == "Age":
@@ -100,10 +100,10 @@ class GUILabAssistant:
             entry.grid(row=idx, column=1, padx=5, pady=20)
             self.entries[label.lower().replace(" ", "_")] = entry
 
-        self.add_button = tk.Button(input_frame, text="Add Lab Assistant", command=self.add_or_update_lab_assistant, bg="#1ABC9C", bd=5, relief="flat", activebackground="#E0FAFF", activeforeground="white", font=("times", 10, "bold"), cursor="hand2", pady=5, padx=5)
+        self.add_button = tk.Button(input_frame, text="Add Lab Assistant", command=self.add_or_update_lab_assistant, bg="#1ABC9C", bd=5, relief="flat", activebackground="#E0FAFF", fg="white", font=("times", 10, "bold"), cursor="hand2", pady=5, padx=5)
         self.add_button.grid(row=len(labels), column=1, pady=10)
 
-        self.delete_button = tk.Button(input_frame, text="Delete Lab Assistant", command=self.delete_selected_lab_assistant, bg="#E74C3C", bd=5, relief="flat", activebackground="#F5B7B1", activeforeground="white", font=("times", 10, "bold"), cursor="hand2", pady=5, padx=5)
+        self.delete_button = tk.Button(input_frame, text="Delete Lab Assistant", command=self.delete_selected_lab_assistant, bg="#E74C3C", bd=5, relief="flat", activebackground="#F5B7B1", fg="white", font=("times", 10, "bold"), cursor="hand2", pady=5, padx=5)
         self.delete_button.grid(row=len(labels) + 1, column=1, pady=10)
 
     def is_valid_age(self, value):
