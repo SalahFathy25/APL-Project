@@ -2,15 +2,14 @@ import sqlite3
 from tkinter import *
 from tkinter import ttk, messagebox
 
-
-class ReceptionistManagementApp:
+class StaffApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Receptionist Management System")
+        self.root.title("Staff Management System")
         self.root.geometry("1500x1000")
-        self.root.configure(bg="#34495E")
+        self.root.configure(bg="#2C3E50")
 
-        self.conn = sqlite3.connect("receptionist.db")
+        self.conn = sqlite3.connect("DB/staff.db")
         self.cursor = self.conn.cursor()
         self.create_table()
 
@@ -26,15 +25,13 @@ class ReceptionistManagementApp:
         self.education_var = StringVar()
 
         self.create_form_frame()
-
         self.create_table_frame()
-
         self.fetch_data()
 
         self.age_var.trace("w", self.validate_age)
 
     def create_table(self):
-        self.cursor.execute("""CREATE TABLE IF NOT EXISTS receptionist (
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS staff (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
             phone TEXT,
@@ -49,7 +46,6 @@ class ReceptionistManagementApp:
         self.conn.commit()
 
     def create_form_frame(self):
-        """Create the form on the left side."""
         form_frame = Frame(self.root, bg="#2C3E50", width=350)
         form_frame.pack(side=LEFT, fill=Y)
 
@@ -66,21 +62,24 @@ class ReceptionistManagementApp:
         ]
 
         for i, (label_text, var) in enumerate(fields):
-            Label(form_frame, text=label_text, bg="#2C3E50", fg="white", font=("Helvetica", 12)).grid(row=i, column=0, sticky=W, padx=10, pady=5)
+            Label(form_frame, text=label_text, bg="#2C3E50", fg="white", font=("times", 12, "bold")).grid(row=i, column=0, sticky=W, padx=10, pady=5)
             if label_text == "Gender":
-                widget = ttk.Combobox(form_frame, textvariable=var, font=("Helvetica", 12), width=23, state="readonly")
+                widget = ttk.Combobox(form_frame, textvariable=var, font=("Helvetica", 12), width=20, state="readonly")
                 widget['values'] = ("Male", "Female", "Other")
             else:
-                widget = Entry(form_frame, textvariable=var, font=("Helvetica", 12), width=25)
+                widget = Entry(form_frame, textvariable=var, font=("times", 12), width=25, relief=SOLID)
             widget.grid(row=i, column=1, pady=5, padx=10)
 
         self.action_button = Button(
-            form_frame, text="Add Receptionist", font=("Helvetica", 12, "bold"), bg="#1ABC9C", fg="white", cursor="hand2", command=self.add_or_update_receptionist
+            form_frame, text="Add Staff", font=("Helvetica", 12, "bold"), bg="#1ABC9C", fg="white", cursor="hand2", command=self.add_or_update_staff
         )
         self.action_button.grid(row=len(fields), columnspan=2, pady=10)
-        Button(
-            form_frame, text="Delete Receptionist", font=("Helvetica", 12, "bold"), bg="#E74C3C", fg="white", cursor="hand2", command=self.delete_receptionist
-        ).grid(row=len(fields) + 1, columnspan=2, pady=10)
+
+        self.delete_button = Button(
+            form_frame, text="Delete Staff", font=("Helvetica", 12, "bold"), bg="#FF9999", bd=10, relief="flat", 
+            activebackground="#E74C3C", activeforeground="white", cursor="hand2", state="disabled", command=self.delete_staff
+        )
+        self.delete_button.grid(row=len(fields) + 1, columnspan=2, pady=10)
 
     def create_table_frame(self):
         table_frame = Frame(self.root, bg="#e3f2fd")
@@ -89,29 +88,26 @@ class ReceptionistManagementApp:
         style = ttk.Style()
         style.configure("Treeview.Heading", font=("Helvetica", 10, "bold"))
 
-        self.receptionist_table = ttk.Treeview(
+        self.staff_table = ttk.Treeview(
             table_frame,
             columns=("ID", "Name", "Phone", "Gender", "Age", "Blood Group", "Address", "Joined", "Certificates", "Education"),
             show="headings",
         )
-        self.receptionist_table.pack(fill=BOTH, expand=True)
+        self.staff_table.pack(fill=BOTH, expand=True)
 
-        # Configure columns
-        for col in self.receptionist_table["columns"]:
-            self.receptionist_table.heading(col, text=col, anchor="center")
-            self.receptionist_table.column(col, anchor="center", stretch=True, width=100)
+        for col in self.staff_table["columns"]:
+            self.staff_table.heading(col, text=col, anchor="center")
+            self.staff_table.column(col, anchor="center", stretch=True, width=100)
 
-        self.receptionist_table.bind("<ButtonRelease-1>", self.load_selected_row)
+        self.staff_table.bind("<ButtonRelease-1>", self.load_selected_row)
 
-    def add_or_update_receptionist(self):
-        """Logic to determine add or update based on the selected row."""
+    def add_or_update_staff(self):
         if self.selected_id:
-            self.update_receptionist()
+            self.update_staff()
         else:
-            self.add_receptionist()
+            self.add_staff()
 
-    def add_receptionist(self):
-        """Handle adding new receptionist."""
+    def add_staff(self):
         if not all([self.name_var.get(), self.phone_var.get(), self.gender_var.get(), self.age_var.get(),
                     self.blood_group_var.get(), self.address_var.get(), self.joined_var.get(),
                     self.certificates_var.get(), self.education_var.get()]):
@@ -120,7 +116,7 @@ class ReceptionistManagementApp:
 
         try:
             self.cursor.execute("""
-                INSERT INTO receptionist (name, phone, gender, age, blood_group, address, joined, certificates, education)
+                INSERT INTO staff (name, phone, gender, age, blood_group, address, joined, certificates, education)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 self.name_var.get(), self.phone_var.get(), self.gender_var.get(),
@@ -129,14 +125,13 @@ class ReceptionistManagementApp:
                 self.joined_var.get(), self.certificates_var.get(), self.education_var.get()
             ))
             self.conn.commit()
-            messagebox.showinfo("Success", "Receptionist added successfully.")
+            messagebox.showinfo("Success", "Staff added successfully.")
             self.fetch_data()
             self.clear_fields()
         except Exception as e:
-            messagebox.showerror("Error", f"Error adding receptionist: {e}")
+            messagebox.showerror("Error", f"Error adding staff: {e}")
 
-    def update_receptionist(self):
-        """Handle updating existing receptionist."""
+    def update_staff(self):
         if not all([self.name_var.get(), self.phone_var.get(), self.gender_var.get(), self.age_var.get(),
                     self.blood_group_var.get(), self.address_var.get(), self.joined_var.get(),
                     self.certificates_var.get(), self.education_var.get()]):
@@ -145,7 +140,7 @@ class ReceptionistManagementApp:
 
         try:
             self.cursor.execute("""
-                UPDATE receptionist SET name = ?, phone = ?, gender = ?, age = ?, blood_group = ?, address = ?, joined = ?, certificates = ?, education = ?
+                UPDATE staff SET name = ?, phone = ?, gender = ?, age = ?, blood_group = ?, address = ?, joined = ?, certificates = ?, education = ?
                 WHERE id = ?
             """, (
                 self.name_var.get(), self.phone_var.get(), self.gender_var.get(),
@@ -155,35 +150,32 @@ class ReceptionistManagementApp:
                 self.selected_id
             ))
             self.conn.commit()
-            messagebox.showinfo("Success", "Receptionist updated successfully.")
+            messagebox.showinfo("Success", "Staff updated successfully.")
             self.fetch_data()
             self.clear_fields()
         except Exception as e:
-            messagebox.showerror("Error", f"Error updating receptionist: {e}")
+            messagebox.showerror("Error", f"Error updating staff: {e}")
 
-    def delete_receptionist(self):
-        """Handle deleting a receptionist."""
+    def delete_staff(self):
         if self.selected_id:
-            self.cursor.execute("DELETE FROM receptionist WHERE id = ?", (self.selected_id,))
+            self.cursor.execute("DELETE FROM staff WHERE id = ?", (self.selected_id,))
             self.conn.commit()
-            messagebox.showinfo("Deleted", "Receptionist deleted successfully.")
+            messagebox.showinfo("Deleted", "Staff member deleted successfully.")
             self.fetch_data()
             self.clear_fields()
         else:
-            messagebox.showerror("Error", "No receptionist selected to delete.")
+            messagebox.showerror("Error", "No staff member selected to delete.")
 
     def fetch_data(self):
-        """Fetch data from database and populate the TreeView."""
-        self.receptionist_table.delete(*self.receptionist_table.get_children())
-        self.cursor.execute("SELECT * FROM receptionist")
+        self.staff_table.delete(*self.staff_table.get_children())
+        self.cursor.execute("SELECT * FROM staff")
         for row in self.cursor.fetchall():
-            self.receptionist_table.insert("", END, values=row)
+            self.staff_table.insert("", END, values=row)
 
     def load_selected_row(self, event):
-        """Load data into the form when a table row is selected."""
-        selected_row = self.receptionist_table.focus()
+        selected_row = self.staff_table.focus()
         if selected_row:
-            data = self.receptionist_table.item(selected_row, "values")
+            data = self.staff_table.item(selected_row, "values")
             if data:
                 self.selected_id = data[0]
                 self.name_var.set(data[1])
@@ -198,7 +190,10 @@ class ReceptionistManagementApp:
 
                 self.action_button.config(text="Update")
 
-    def validate_age(self):
+                # Enable the delete button
+                self.delete_button.config(state="normal")
+
+    def validate_age(self, *args):
         age = self.age_var.get()
         if age and not age.isdigit():
             messagebox.showwarning("Input Error", "Age must be a valid integer.")
@@ -216,9 +211,10 @@ class ReceptionistManagementApp:
         self.education_var.set("")
         self.selected_id = None
         self.action_button.config(text="Add")
+        self.delete_button.config(state="disabled")
 
 
 if __name__ == "__main__":
     root = Tk()
-    app = ReceptionistManagementApp(root)
+    app = StaffApp(root)
     root.mainloop()

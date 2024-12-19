@@ -2,7 +2,7 @@ import sqlite3
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-DATABASE = "lab_test.db"
+DATABASE = "DB/lab_test.db"
 
 class HospitalDB:
     def __init__(self, db_name=DATABASE):
@@ -178,28 +178,28 @@ class GUILabTest:
         self.root.title("Lab Test Management")
         self.root.geometry("1500x1000")
 
-        self.root.config(bg="#0047AB")
+        self.root.config(bg="#2C3E50")
 
         self.create_input_fields()
         self.create_table()
 
     def create_input_fields(self):
-        input_frame = tk.Frame(self.root, bg="#0047AB")
+        input_frame = tk.Frame(self.root, bg="#2C3E50")
         input_frame.pack(side="left")
 
         labels = ["Name", "Price"]
         self.entries = {}
 
         for idx, label in enumerate(labels):
-            tk.Label(input_frame, text=label, bg="#0047AB", font=("times", 12, "bold")).grid(row=idx, column=0, sticky="e")
+            tk.Label(input_frame, text=label, foreground="white", bg="#2C3E50", font=("times", 12, "bold")).grid(row=idx, column=0, sticky="e")
 
             entry = tk.Entry(input_frame, width=30, font=("times", 12), relief="solid")
             entry.grid(row=idx, column=1, padx=5, pady=20)
             self.entries[label.lower().replace(" ", "_")] = entry
 
-        self.add_button = tk.Button(input_frame, text="Add Test", command=self.add_lab_test, bg="#89CFF0", bd=10,
-                                    relief="flat", activebackground="#E0FAFF", activeforeground="white",
-                                    font=("times", 10, "bold", "italic"), cursor="heart", state="normal", pady=10)
+        self.add_button = tk.Button(input_frame, text="Add Test", command=self.add_lab_test, bg="#1ABC9C", bd=10,
+                                    relief="flat", activebackground="#E0FAFF", activeforeground="white",foreground="white",
+                                    font=("Helvetica", 12, "bold"), cursor="hand2", state="normal", pady=10)
         self.add_button.grid(row=len(labels), column=1, pady=10)
 
     def create_table(self):

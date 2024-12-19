@@ -2,17 +2,17 @@ import sqlite3
 from tkinter import *
 from tkinter import ttk, messagebox
 
-class StaffApp:
+
+class NurseApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Staff Management System")
+        self.root.title("Nurse Management")
         self.root.geometry("1500x1000")
         self.root.configure(bg="#34495E")
 
-        self.conn = sqlite3.connect("staff.db")
+        self.conn = sqlite3.connect("DB/nurse.db")
         self.cursor = self.conn.cursor()
         self.create_table()
-
         self.selected_id = None
         self.name_var = StringVar()
         self.phone_var = StringVar()
@@ -25,13 +25,15 @@ class StaffApp:
         self.education_var = StringVar()
 
         self.create_form_frame()
+
         self.create_table_frame()
+
         self.fetch_data()
 
         self.age_var.trace("w", self.validate_age)
 
     def create_table(self):
-        self.cursor.execute("""CREATE TABLE IF NOT EXISTS staff (
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS Nurses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
             phone TEXT,
@@ -62,24 +64,21 @@ class StaffApp:
         ]
 
         for i, (label_text, var) in enumerate(fields):
-            Label(form_frame, text=label_text, bg="#2C3E50", fg="white", font=("times", 12, "bold")).grid(row=i, column=0, sticky=W, padx=10, pady=5)
+            Label(form_frame, text=label_text, bg="#2C3E50", fg="white", font=("Helvetica", 12)).grid(row=i, column=0, sticky=W, padx=10, pady=5)
             if label_text == "Gender":
-                widget = ttk.Combobox(form_frame, textvariable=var, font=("Helvetica", 12), width=20, state="readonly")
+                widget = ttk.Combobox(form_frame, textvariable=var, font=("Helvetica", 12), width=23, state="readonly")
                 widget['values'] = ("Male", "Female", "Other")
             else:
-                widget = Entry(form_frame, textvariable=var, font=("times", 12), width=25, relief=SOLID)
+                widget = Entry(form_frame, textvariable=var, font=("Helvetica", 12), width=25)
             widget.grid(row=i, column=1, pady=5, padx=10)
 
         self.action_button = Button(
-            form_frame, text="Add Staff", font=("Helvetica", 12, "bold"), bg="#1ABC9C", fg="white", cursor="hand2", command=self.add_or_update_staff
+            form_frame, text="Add nurse", font=("Helvetica", 12, "bold"), bg="#1ABC9C", fg="white", cursor="hand2", command=self.add_or_update_nurse
         )
         self.action_button.grid(row=len(fields), columnspan=2, pady=10)
-
-        self.delete_button = Button(
-            form_frame, text="Delete Staff", font=("Helvetica", 12, "bold"), bg="#FF9999", bd=10, relief="flat", 
-            activebackground="#E74C3C", activeforeground="white", cursor="hand2", state="disabled", command=self.delete_staff
-        )
-        self.delete_button.grid(row=len(fields) + 1, columnspan=2, pady=10)
+        Button(
+            form_frame, text="Delete nurse", font=("Helvetica", 12, "bold"), bg="#E74C3C", fg="white", cursor="hand2", command=self.delete_nurse
+        ).grid(row=len(fields) + 1, columnspan=2, pady=10)
 
     def create_table_frame(self):
         table_frame = Frame(self.root, bg="#e3f2fd")
@@ -88,26 +87,26 @@ class StaffApp:
         style = ttk.Style()
         style.configure("Treeview.Heading", font=("Helvetica", 10, "bold"))
 
-        self.staff_table = ttk.Treeview(
+        self.nurse_table = ttk.Treeview(
             table_frame,
             columns=("ID", "Name", "Phone", "Gender", "Age", "Blood Group", "Address", "Joined", "Certificates", "Education"),
             show="headings",
         )
-        self.staff_table.pack(fill=BOTH, expand=True)
+        self.nurse_table.pack(fill=BOTH, expand=True)
 
-        for col in self.staff_table["columns"]:
-            self.staff_table.heading(col, text=col, anchor="center")
-            self.staff_table.column(col, anchor="center", stretch=True, width=100)
+        for col in self.nurse_table["columns"]:
+            self.nurse_table.heading(col, text=col, anchor="center")
+            self.nurse_table.column(col, anchor="center", stretch=True, width=100)
 
-        self.staff_table.bind("<ButtonRelease-1>", self.load_selected_row)
+        self.nurse_table.bind("<ButtonRelease-1>", self.load_selected_row)
 
-    def add_or_update_staff(self):
+    def add_or_update_nurse(self):
         if self.selected_id:
-            self.update_staff()
+            self.update_nurse()
         else:
-            self.add_staff()
+            self.add_nurse()
 
-    def add_staff(self):
+    def add_nurse(self):
         if not all([self.name_var.get(), self.phone_var.get(), self.gender_var.get(), self.age_var.get(),
                     self.blood_group_var.get(), self.address_var.get(), self.joined_var.get(),
                     self.certificates_var.get(), self.education_var.get()]):
@@ -116,7 +115,7 @@ class StaffApp:
 
         try:
             self.cursor.execute("""
-                INSERT INTO staff (name, phone, gender, age, blood_group, address, joined, certificates, education)
+                INSERT INTO Nurses (name, phone, gender, age, blood_group, address, joined, certificates, education)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 self.name_var.get(), self.phone_var.get(), self.gender_var.get(),
@@ -125,13 +124,13 @@ class StaffApp:
                 self.joined_var.get(), self.certificates_var.get(), self.education_var.get()
             ))
             self.conn.commit()
-            messagebox.showinfo("Success", "Staff added successfully.")
+            messagebox.showinfo("Success", "nurse added successfully.")
             self.fetch_data()
             self.clear_fields()
         except Exception as e:
-            messagebox.showerror("Error", f"Error adding staff: {e}")
+            messagebox.showerror("Error", f"Error adding nurse: {e}")
 
-    def update_staff(self):
+    def update_nurse(self):
         if not all([self.name_var.get(), self.phone_var.get(), self.gender_var.get(), self.age_var.get(),
                     self.blood_group_var.get(), self.address_var.get(), self.joined_var.get(),
                     self.certificates_var.get(), self.education_var.get()]):
@@ -140,7 +139,7 @@ class StaffApp:
 
         try:
             self.cursor.execute("""
-                UPDATE staff SET name = ?, phone = ?, gender = ?, age = ?, blood_group = ?, address = ?, joined = ?, certificates = ?, education = ?
+                UPDATE Nurses SET name = ?, phone = ?, gender = ?, age = ?, blood_group = ?, address = ?, joined = ?, certificates = ?, education = ?
                 WHERE id = ?
             """, (
                 self.name_var.get(), self.phone_var.get(), self.gender_var.get(),
@@ -150,32 +149,32 @@ class StaffApp:
                 self.selected_id
             ))
             self.conn.commit()
-            messagebox.showinfo("Success", "Staff updated successfully.")
+            messagebox.showinfo("Success", "nurse updated successfully.")
             self.fetch_data()
             self.clear_fields()
         except Exception as e:
-            messagebox.showerror("Error", f"Error updating staff: {e}")
+            messagebox.showerror("Error", f"Error updating nurse: {e}")
 
-    def delete_staff(self):
+    def delete_nurse(self):
         if self.selected_id:
-            self.cursor.execute("DELETE FROM staff WHERE id = ?", (self.selected_id,))
+            self.cursor.execute("DELETE FROM Nurses WHERE id = ?", (self.selected_id,))
             self.conn.commit()
-            messagebox.showinfo("Deleted", "Staff member deleted successfully.")
+            messagebox.showinfo("Deleted", "nurse member deleted successfully.")
             self.fetch_data()
             self.clear_fields()
         else:
-            messagebox.showerror("Error", "No staff member selected to delete.")
+            messagebox.showerror("Error", "No nurse member selected to delete.")
 
     def fetch_data(self):
-        self.staff_table.delete(*self.staff_table.get_children())
-        self.cursor.execute("SELECT * FROM staff")
+        self.nurse_table.delete(*self.nurse_table.get_children())
+        self.cursor.execute("SELECT * FROM Nurses")
         for row in self.cursor.fetchall():
-            self.staff_table.insert("", END, values=row)
+            self.nurse_table.insert("", END, values=row)
 
     def load_selected_row(self, event):
-        selected_row = self.staff_table.focus()
+        selected_row = self.nurse_table.focus()
         if selected_row:
-            data = self.staff_table.item(selected_row, "values")
+            data = self.nurse_table.item(selected_row, "values")
             if data:
                 self.selected_id = data[0]
                 self.name_var.set(data[1])
@@ -190,10 +189,7 @@ class StaffApp:
 
                 self.action_button.config(text="Update")
 
-                # Enable the delete button
-                self.delete_button.config(state="normal")
-
-    def validate_age(self, *args):
+    def validate_age(self):
         age = self.age_var.get()
         if age and not age.isdigit():
             messagebox.showwarning("Input Error", "Age must be a valid integer.")
@@ -211,10 +207,9 @@ class StaffApp:
         self.education_var.set("")
         self.selected_id = None
         self.action_button.config(text="Add")
-        self.delete_button.config(state="disabled")
 
 
 if __name__ == "__main__":
     root = Tk()
-    app = StaffApp(root)
+    app = NurseApp(root)
     root.mainloop()

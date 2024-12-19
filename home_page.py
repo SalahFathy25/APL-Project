@@ -3,7 +3,10 @@ import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
 
+##اعمل bloodGroup كويس
+## اعمل تأثيرات لكل الزراير
 
+##Hospital / Medicine / Patient 
 def open_gui(file_name):
     try:
         os.system(f"python {file_name}")
@@ -16,7 +19,6 @@ def exit_app():
         root.destroy()
 
 
-# Initialize the main application window
 root = tk.Tk()
 root.title("Hospital Management System")
 root.geometry("1200x1000")
@@ -46,16 +48,16 @@ title_label = tk.Label(
 title_label.grid(row=0, column=0, columnspan=3, pady=(10, 20))
 
 gui_files = [
-    ("Doctor Management", "doctor.py", "icons/doctor.png"),##done
-    ("Hospital Management", "hospital_management.py", "icons/hospital.png"),
-    ("Lab Assistant Management", "lab_assistant.py", "icons/lab_assistant.png"),##done
-    ("Lab Test Management", "lab_test.py", "icons/lab_test.png"),
-    ("Medicine Management", "medicine.py", "icons/medicine.png"),
-    ("Nurse Management", "nurse.py", "icons/nurse.png"),##done
-    ("Patient Management", "patient.py", "icons/patient.png"),
-    ("PharmAssistant Management", "pharmassistant.py", "icons/patient.png"),##done
-    ("Receptionist Management", "receptionist.py", "icons/receptionist.png"),##done
-    ("Staff Management", "staff.py", "icons/staff.png"),##done
+    ("Doctor Management", "screens\doctor.py", "icons/doctor.png"),
+    ("Hospital Management", "screens\hospital_management.py", "icons/hospital.png"),
+    ("Lab Assistant Management", "screens\lab_assistant.py", "icons/lab_assistant.png"),
+    ("Lab Test Management", "screens\lab_test.py", "icons/lab_test.png"),
+    ("Medicine Management", "screens\medicine.py", "icons/medicine.png"),
+    ("Nurse Management", "screens\screenNurse.py", "icons/nurse.png"),
+    ("Patient Management", "screens\patient.py", "icons/patient.png"),
+    ("PharmAssistant Management", "screens\pharmassistant.py", "icons/patient.png"),
+    ("Receptionist Management", "screens\Receptionist.py", "icons/receptionist.png"),
+    ("Staff Management", "screens\staff.py", "icons/staff.png"),
 ]
 
 for index, (gui_name, gui_file, icon_path) in enumerate(gui_files):

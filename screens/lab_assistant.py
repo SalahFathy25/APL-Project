@@ -1,7 +1,7 @@
 import sqlite3
 import tkinter as tk
 from tkinter import ttk, messagebox
-DATABASE = "lab_assistant.db"
+DATABASE = "DB/lab_assistant.db"
 
 class HospitalDB:
     def __init__(self, db_name=DATABASE):

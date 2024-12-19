@@ -2,7 +2,7 @@ import sqlite3
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-DATABASE = "projectDatabase.db"
+DATABASE = "DB/medicine.db"
 
 class HospitalDB:
     def __init__(self, db_name=DATABASE):
@@ -54,22 +54,22 @@ class GUIMedicine:
         self.root.title("Medicine")
         self.root.geometry("800x600")
 
-        self.root.config(bg="#E0FAFF")
+        self.root.config(bg="#34495E")
 
         self.create_input_fields()
         self.create_table()
 
     def create_input_fields(self):
-        input_frame = tk.Frame(self.root, bg="#0047AB")
+        input_frame = tk.Frame(self.root, bg="#2C3E50")
         input_frame.pack(side="top", fill="x")
 
         labels = ["Name", "Dosage", "Price"]
         self.entries = {}
 
         for idx, label in enumerate(labels):
-            tk.Label(input_frame, text=label, bg="#0047AB", font=("times", 12,"bold")).grid(row=idx, column=0, sticky="e")
+            tk.Label(input_frame, text=label, bg="#2C3E50", font=("times", 12,"bold")).grid(row=idx, column=0, sticky="e")
             if label == "Dosage":
-                entry = ttk.Combobox(input_frame, values=["Tablets", "Capsules", "Poders", "Oral Solution", "Injectable Solutions"], state="readonly", width=28)
+                entry = ttk.Combobox(input_frame, values=["Tablets", "Capsules", "Poders", "Oral Solution", "Injectable Solutions"], state="readonly", width=37)
             else:
                 entry = tk.Entry(input_frame, width=30, font=("times", 12), relief="solid")
             entry.grid(row=idx, column=1, padx=5, pady=20)

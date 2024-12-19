@@ -10,7 +10,7 @@ class DoctorManagementApp:
         self.root.geometry("1500x1000")
         self.root.configure(bg="#34495E")
 
-        self.conn = sqlite3.connect("doctor.db")
+        self.conn = sqlite3.connect("DB/doctor.db")
         self.cursor = self.conn.cursor()
         self.create_table()
 
