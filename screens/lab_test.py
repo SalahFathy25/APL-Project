@@ -42,7 +42,7 @@ class LabTest:
         return self.db.fetch_query("SELECT * FROM LabTest WHERE id = ?", (lab_test_id,))
 
     def update_lab_test(self, lab_test_id, field, value):
-        self.db.execute_query("UPDATE LabTest SET {field} = ? WHERE id = ?", (value, lab_test_id))
+        self.db.execute_query(f"UPDATE LabTest SET {field} = ? WHERE id = ?", (value, lab_test_id))
 
     def delete_lab_test(self, lab_test_id):
         self.db.execute_query("DELETE FROM LabTest WHERE id = ?", (lab_test_id,))
@@ -127,10 +127,50 @@ class GUILabTest:
             values = self.table.item(item, "values")
             if values:
                 self.selected_lab_test_id = values[0]
+                self.entries["name"].delete(0, tk.END)
+                self.entries["name"].insert(0, values[1])
+                self.entries["price"].delete(0, tk.END)
+                self.entries["price"].insert(0, values[2])
                 self.delete_button.config(state="normal")
+
+                self.add_button.config(
+                    text="Update Test",
+                    command=self.update_lab_test,
+                    bg="#1ABC9C"
+                )
             else:
-                self.selected_lab_test_id = None
-                self.delete_button.config(state="disabled")
+                self.clear_selection()
+
+    def clear_selection(self):
+        self.selected_lab_test_id = None
+        self.delete_button.config(state="disabled")
+        self.add_button.config(
+            text="Add Test",
+            command=self.add_lab_test,
+            bg="#1ABC9C"
+        )
+        for entry in self.entries.values():
+            entry.delete(0, tk.END)
+
+    def update_lab_test(self):
+        if self.selected_lab_test_id:
+            try:
+                data = {key: entry.get() for key, entry in self.entries.items()}
+                self.labTest.update_lab_test(
+                    self.selected_lab_test_id,
+                    "name",
+                    data["name"]
+                )
+                self.labTest.update_lab_test(
+                    self.selected_lab_test_id,
+                    "price",
+                    float(data["price"])
+                )
+                messagebox.showinfo("Success", "Test updated successfully.")
+                self.clear_selection()
+                self.load_lab_tests()
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
 
     def delete_lab_test(self):
         if self.selected_lab_test_id:

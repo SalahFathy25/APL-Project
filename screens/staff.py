@@ -65,21 +65,22 @@ class StaffApp:
             Label(form_frame, text=label_text, bg="#2C3E50", fg="white", font=("times", 12, "bold")).grid(row=i, column=0, sticky=W, padx=10, pady=5)
             if label_text == "Gender":
                 widget = ttk.Combobox(form_frame, textvariable=var, font=("Helvetica", 12), width=20, state="readonly")
-                widget['values'] = ("Male", "Female", "Other")
-
-            elif label_text =="Blood Group":
-                widget = ttk.Combobox(form_frame, values=["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"], state="readonly", width=30)
+                widget['values'] = ("Male", "Female")
+            elif label_text == "Blood Group":
+                widget = ttk.Combobox(form_frame, textvariable=var, font=("Helvetica", 12), width=20, state="readonly")
+                widget['values'] = ("A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-")
             else:
                 widget = Entry(form_frame, textvariable=var, font=("times", 12), width=25, relief=SOLID)
             widget.grid(row=i, column=1, pady=5, padx=10)
 
         self.action_button = Button(
-            form_frame, text="Add Staff", font=("Helvetica", 12, "bold"), bg="#1ABC9C", fg="white", cursor="hand2", command=self.add_or_update_staff
+            form_frame, text="Add Staff", font=("Helvetica", 12, "bold"), bg="#1ABC9C", fg="white", cursor="hand2",
+            activebackground="#16A085", command=self.add_or_update_staff
         )
         self.action_button.grid(row=len(fields), columnspan=2, pady=10)
 
         self.delete_button = Button(
-            form_frame, text="Delete Staff", font=("Helvetica", 12, "bold"), bg="#FF9999", bd=10, relief="flat",
+            form_frame, text="Delete Staff", font=("Helvetica", 12, "bold"), fg="white", bg="#FF9999", bd=10, relief="flat",
             activebackground="#E74C3C", activeforeground="white", cursor="hand2", state="disabled", command=self.delete_staff
         )
         self.delete_button.grid(row=len(fields) + 1, columnspan=2, pady=10)
@@ -192,8 +193,6 @@ class StaffApp:
                 self.education_var.set(data[9])
 
                 self.action_button.config(text="Update")
-
-                # Enable the delete button
                 self.delete_button.config(state="normal")
 
     def validate_age(self, *args):

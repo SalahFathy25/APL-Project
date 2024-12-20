@@ -74,7 +74,7 @@ class DoctorManagementApp:
             Label(form_frame, text=label, bg="#2C3E50", fg="white", font=("Helvetica", 12)).grid(row=i, column=0, padx=10, pady=5, sticky=W)
             if label == "Gender":
                 widget = ttk.Combobox(form_frame, textvariable=var, state="readonly", width=23, font=("Helvetica", 12))
-                widget["values"] = ("Male", "Female", "Other")
+                widget["values"] = ("Male", "Female")
             elif label == "Blood Group":
                 widget = ttk.Combobox(form_frame, textvariable=var, state="readonly", width=23, font=("Helvetica", 12))
                 widget["values"] = ("A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-")

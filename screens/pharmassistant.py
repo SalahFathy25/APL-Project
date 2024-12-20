@@ -1,6 +1,7 @@
 import sqlite3
 import tkinter as tk
 from tkinter import ttk, messagebox
+
 DATABASE = "DB/pharmassistant.db"
 
 class HospitalDB:
@@ -79,10 +80,10 @@ class GUIPharmacist:
         ]
         self.entries = {}
         for idx, label in enumerate(labels):
-            tk.Label(input_frame, text=label, bg="#2C3E50",fg="white", font=("times", 12, "bold")).grid(row=idx, column=0, sticky="e")
+            tk.Label(input_frame, text=label, bg="#2C3E50", fg="white", font=("times", 12, "bold")).grid(row=idx, column=0, sticky="e")
             if label == "Gender":
-                entry = ttk.Combobox(input_frame, values=["Male", "Female", "Other"], state="readonly", width=38)
-            elif label =="Blood Group":
+                entry = ttk.Combobox(input_frame, values=["Male", "Female"], state="readonly", width=38)
+            elif label == "Blood Group":
                 entry = ttk.Combobox(input_frame, values=["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"], state="readonly", width=38)
             else:
                 entry = tk.Entry(input_frame, width=30, font=("times", 12), relief="solid")
@@ -92,11 +93,15 @@ class GUIPharmacist:
         validate_age = (self.root.register(self.validate_age), '%P')
         self.entries["age"].config(validate="key", validatecommand=validate_age)
 
-        self.add_button = tk.Button(input_frame, text="Add Pharmacist", command=self.add_or_update_pharmacist, bg="#1ABC9C",font=("Helvetica", 12, "bold"), fg="white", cursor="hand2")
+        self.add_button = tk.Button(input_frame, text="Add Pharmacist", command=self.add_or_update_pharmacist, bg="#1ABC9C", font=("Helvetica", 12, "bold"), fg="white", cursor="hand2")
         self.add_button.grid(row=len(labels), column=1, pady=10)
+        self.add_button.bind("<Enter>", lambda e, b=self.add_button: self.on_button_hover_in(b, "#16A085"))
+        self.add_button.bind("<Leave>", lambda e, b=self.add_button: self.on_button_hover_out(b, "#1ABC9C"))
 
-        self.delete_button = tk.Button(input_frame, text="Delete pharmacist", font=("Helvetica", 12, "bold"), bg="#E74C3C", fg="white", cursor="hand2",command=self.delete_selected_pharmacist)
-        self.delete_button.grid(row=len(labels) +1, column=1, pady=10)
+        self.delete_button = tk.Button(input_frame, text="Delete Pharmacist", font=("Helvetica", 12, "bold"), bg="#E74C3C", fg="white", cursor="hand2", command=self.delete_selected_pharmacist)
+        self.delete_button.grid(row=len(labels) + 1, column=1, pady=10)
+        self.delete_button.bind("<Enter>", lambda e, b=self.delete_button: self.on_button_hover_in(b, "#C0392B"))
+        self.delete_button.bind("<Leave>", lambda e, b=self.delete_button: self.on_button_hover_out(b, "#E74C3C"))
 
     def create_table(self):
         self.table = ttk.Treeview(self.root, columns=("ID", "Name", "Phone", "Gender", "Age", "Blood Group", "Address", "Joined Date", "Certificates", "Education"), show="headings", style="Treeview")
@@ -116,6 +121,11 @@ class GUIPharmacist:
 
         self.table.bind("<ButtonRelease-1>", self.on_select)
 
+    def on_button_hover_in(self, button, color):
+        button.config(bg=color)
+
+    def on_button_hover_out(self, button, color):
+        button.config(bg=color)
 
     def validate_age(self, input_value):
         return input_value.isdigit() or input_value == ""
@@ -123,7 +133,6 @@ class GUIPharmacist:
     def add_or_update_pharmacist(self):
         data = {key: entry.get() for key, entry in self.entries.items()}
         try:
-
             if self.selected_id is None:
                 self.pharm_assistant.create_pharm_assistant(
                     data["name"], data["phone"], data["gender"], int(data["age"]),
@@ -166,7 +175,6 @@ class GUIPharmacist:
             self.delete_button.config(state="normal")
             self.add_button.config(text="Update")
 
-            # Pre-fill the form with selected values
             self.entries["name"].delete(0, tk.END)
             self.entries["name"].insert(0, values[1])
             self.entries["phone"].delete(0, tk.END)
@@ -184,6 +192,9 @@ class GUIPharmacist:
             self.entries["certificates"].insert(0, values[8])
             self.entries["education"].delete(0, tk.END)
             self.entries["education"].insert(0, values[9])
+        else:
+            self.selected_id = None
+            self.delete_button.config(state="disabled")
 
     def reset_form(self):
         self.selected_id = None

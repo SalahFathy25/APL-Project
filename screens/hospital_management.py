@@ -12,7 +12,7 @@ FONT = ("Helvetica", 10, 'bold')
 LABEL_FONT = ("Arial", 10, 'bold')
 
 class HospitalDB:
-    def __init__(self, db_name="projectDatabase.db"):
+    def __init__(self, db_name="DB/Hospital.db"):
         self.conn = sqlite3.connect(db_name)
         self.cursor = self.conn.cursor()
         self.create_tables()

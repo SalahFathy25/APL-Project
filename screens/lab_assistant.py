@@ -91,9 +91,9 @@ class GUILabAssistant:
         validate_age = (self.root.register(self.is_valid_age), "%P")
 
         for idx, label in enumerate(labels):
-            tk.Label(input_frame, text=label, bg="#2C3E50",fg="white", font=("times", 12, "bold")).grid(row=idx, column=0, sticky="e")
+            tk.Label(input_frame, text=label, bg="#2C3E50", fg="white", font=("times", 12, "bold")).grid(row=idx, column=0, sticky="e")
             if label == "Gender":
-                entry = ttk.Combobox(input_frame, values=["Male", "Female", "Other"], state="readonly", width=23)
+                entry = ttk.Combobox(input_frame, values=["Male", "Female"], state="readonly", width=23)
             elif label == "Blood Group":
                 entry = ttk.Combobox(input_frame, values=["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"], state="readonly", width=23)
             elif label == "Age":
@@ -108,15 +108,6 @@ class GUILabAssistant:
 
         self.delete_button = tk.Button(input_frame, text="Delete Lab Assistant", command=self.delete_selected_lab_assistant, bg="#E74C3C", bd=5, relief="flat", activebackground="#F5B7B1", fg="white", font=("times", 10, "bold"), cursor="hand2", pady=5, padx=5, state="disabled")
         self.delete_button.grid(row=len(labels) + 1, column=1, pady=10)
-
-        self.add_button.bind("<Enter>", lambda e: self.on_hover_button(self.add_button, "#16A085"))
-        self.add_button.bind("<Leave>", lambda e: self.on_hover_button(self.add_button, "#1ABC9C"))
-
-        self.delete_button.bind("<Enter>", lambda e: self.on_hover_button(self.delete_button, "#C0392B"))
-        self.delete_button.bind("<Leave>", lambda e: self.on_hover_button(self.delete_button, "#E74C3C"))
-
-    def on_hover_button(self, button, color):
-        button.config(bg=color)
 
     def is_valid_age(self, value):
         if value == "" or value.isdigit():
@@ -144,8 +135,17 @@ class GUILabAssistant:
 
     def add_or_update_lab_assistant(self):
         try:
-            data = {key: entry.get() for key, entry in self.entries.items()}
+            for key, entry in self.entries.items():
+                if isinstance(entry, ttk.Combobox):
+                    value = entry.get()
+                else:
+                    value = entry.get().strip()
+                if not value:
+                    raise ValueError(f"Please fill in the {key.replace('_', ' ').title()} field.")
+
+            data = {key: entry.get().strip() for key, entry in self.entries.items()}
             age = data["age"]
+
             if not age.isdigit() or not (18 <= int(age) <= 100):
                 raise ValueError("Please enter a valid age between 18 and 100.")
 
@@ -185,45 +185,21 @@ class GUILabAssistant:
             self.table.delete(row)
 
         for row in self.lab_assistant_manager.read_LabAssistant():
-            self.table.insert("", tk.END, values=(*row, "Delete"))
+            self.table.insert("", tk.END, values=row)
 
         self.table.bind("<ButtonRelease-1>", self.handle_table_click)
 
     def handle_table_click(self, event):
         item = self.table.identify('item', event.x, event.y)
-        column = self.table.identify_column(event.x)
-
-        if column == '#11':
-            values = self.table.item(item, "values")
-            if values:
-                lab_assistant_id = values[0]
-                confirm = messagebox.askyesno("Confirm", f"Delete lab assistant with ID {lab_assistant_id}?")
-                if confirm:
-                    self.lab_assistant_manager.delete_LabAssistant(lab_assistant_id)
-                    self.load_lab_assistants()
-        else:
-            values = self.table.item(item, "values")
-            if values:
-                self.selected_id = values[0]
-                self.populate_form(values)
+        values = self.table.item(item, "values")
+        if values:
+            self.selected_id = values[0]
+            self.populate_form(values)
 
     def populate_form(self, values):
-        self.entries["name"].delete(0, tk.END)
-        self.entries["name"].insert(0, values[1])
-        self.entries["phone"].delete(0, tk.END)
-        self.entries["phone"].insert(0, values[2])
-        self.entries["gender"].set(values[3])
-        self.entries["age"].delete(0, tk.END)
-        self.entries["age"].insert(0, values[4])
-        self.entries["blood_group"].set(values[5])
-        self.entries["address"].delete(0, tk.END)
-        self.entries["address"].insert(0, values[6])
-        self.entries["joined_date"].delete(0, tk.END)
-        self.entries["joined_date"].insert(0, values[7])
-        self.entries["certificates"].delete(0, tk.END)
-        self.entries["certificates"].insert(0, values[8])
-        self.entries["education"].delete(0, tk.END)
-        self.entries["education"].insert(0, values[9])
+        for idx, key in enumerate(self.entries.keys()):
+            self.entries[key].delete(0, tk.END)
+            self.entries[key].insert(0, values[idx + 1])
 
         self.add_button.config(text="Update Lab Assistant")
         self.delete_button.config(state="normal")

@@ -3,20 +3,21 @@ import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
 
-## اعمل تأثيرات لكل الزراير
-
-##Hospital
 def open_gui(file_name):
     try:
         os.system(f"python {file_name}")
     except Exception as e:
         messagebox.showerror("Error", f"Unable to open {file_name}: {str(e)}")
 
-
 def exit_app():
     if messagebox.askyesno("Exit", "Are you sure you want to exit?"):
         root.destroy()
 
+def on_enter(button, hover_color):
+    button.configure(bg=hover_color)
+
+def on_leave(button, original_color):
+    button.configure(bg=original_color)
 
 root = tk.Tk()
 root.title("Hospital Management System")
@@ -47,11 +48,11 @@ title_label = tk.Label(
 title_label.grid(row=0, column=0, columnspan=3, pady=(10, 20))
 
 gui_files = [
-    ("Doctor Management", "screens\doctor.py", "icons/doctor.png"),##done done
-    ("Hospital Management", "screens\hospital_management.py", "icons/hospital.png"), ##done done
-    ("Lab Assistant Management", "screens\lab_assistant.py", "icons/lab_assistant.png"),##done done
-    ("Lab Test Management", "screens\lab_test.py", "icons/lab_test.png"),##done done
-    ("Medicine Management", "screens\medicine.py", "icons/medicine.png"),##done done
+    ("Doctor Management", "screens\doctor.py", "icons/doctor.png"),
+    ("Hospital Management", "screens\hospital_management.py", "icons/hospital.png"),
+    ("Lab Assistant Management", "screens\lab_assistant.py", "icons/lab_assistant.png"),
+    ("Lab Test Management", "screens\lab_test.py", "icons/lab_test.png"),
+    ("Medicine Management", "screens\medicine.py", "icons/medicine.png"),
     ("Nurse Management", "screens\screenNurse.py", "icons/nurse.png"),
     ("Patient Management", "screens\patient.py", "icons/patient.png"),
     ("PharmAssistant Management", "screens\pharmassistant.py", "icons/patient.png"),
@@ -66,6 +67,9 @@ for index, (gui_name, gui_file, icon_path) in enumerate(gui_files):
     else:
         icon = None
 
+    original_color = "#007BFF"
+    hover_color = "#0056b3"
+
     button = tk.Button(
         center_frame,
         text=gui_name,
@@ -73,15 +77,19 @@ for index, (gui_name, gui_file, icon_path) in enumerate(gui_files):
         compound="top",
         command=lambda f=gui_file: open_gui(f),
         font=("Arial", 12),
-        bg="#007BFF",
+        bg=original_color,
         fg="white",
         relief="groove",
+        cursor="hand2",
         bd=1,
         padx=20,
         pady=10,
         width=150,
     )
     button.image = icon
+
+    button.bind("<Enter>", lambda e, b=button, hc=hover_color: on_enter(b, hc))
+    button.bind("<Leave>", lambda e, b=button, oc=original_color: on_leave(b, oc))
 
     row = (index // 3) + 1
     col = index % 3
@@ -94,6 +102,7 @@ exit_button = tk.Button(
     font=("Arial", 14),
     bg="#FF5733",
     fg="white",
+    cursor="hand2",
     width=20,
     relief="raised",
     bd=3,
@@ -101,5 +110,11 @@ exit_button = tk.Button(
 exit_button.grid(
     row=(len(gui_files) // 3) + 2, column=0, columnspan=3, pady=(20, 10), sticky="s"
 )
+
+exit_button_original_color = "#FF5733"
+exit_button_hover_color = "#cc4627"
+
+exit_button.bind("<Enter>", lambda e: on_enter(exit_button, exit_button_hover_color))
+exit_button.bind("<Leave>", lambda e: on_leave(exit_button, exit_button_original_color))
 
 root.mainloop()

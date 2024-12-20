@@ -4,7 +4,6 @@ from tkinter import ttk, messagebox
 
 DATABASE = "DB/medicine.db"
 
-
 class HospitalDB:
     def __init__(self, db_name=DATABASE):
         self.conn = sqlite3.connect(db_name)
@@ -33,7 +32,6 @@ class HospitalDB:
     def close(self):
         self.conn.close()
 
-
 class Medicine:
     def __init__(self, db):
         self.db = db
@@ -44,9 +42,15 @@ class Medicine:
     def get_all_medicines(self):
         return self.db.fetch_query("SELECT id, name, dosage, price FROM Medicine")
 
+    def get_medicine_by_id(self, id):
+        result = self.db.fetch_query("SELECT * FROM Medicine WHERE id = ?", (id,))
+        return result[0] if result else None
+
+    def update_medicine(self, id, name, dosage, price):
+        self.db.execute_query("UPDATE Medicine SET name = ?, dosage = ?, price = ? WHERE id = ?", (name, dosage, price, id))
+
     def delete_medicine(self, id):
         self.db.execute_query("DELETE FROM Medicine WHERE id = ?", (id,))
-
 
 class GUIMedicine:
     def __init__(self, root, medicine):
@@ -57,6 +61,7 @@ class GUIMedicine:
         self.root.config(bg="#34495E")
 
         self.selected_item = None
+        self.is_update_mode = False
 
         self.create_input_fields()
         self.create_table()
@@ -83,8 +88,8 @@ class GUIMedicine:
         self.add_button.grid(row=len(labels), column=1, pady=10)
 
         self.delete_button = tk.Button(input_frame, text="Delete Medicine", command=self.delete_medicine, bg="#FF6347", bd=10,
-                                       relief="flat", activebackground="#FF7F7F", fg="white", font=("times", 12, "bold"),
-                                       cursor="hand2", state="disabled", pady=5)
+                                        relief="flat", activebackground="#FF7F7F", fg="white", font=("times", 12, "bold"),
+                                        cursor="hand2", state="disabled", pady=5)
         self.delete_button.grid(row=len(labels) + 1, column=1, pady=10)
 
     def create_table(self):
@@ -108,8 +113,15 @@ class GUIMedicine:
     def add_medicine(self):
         try:
             data = {key: entry.get() for key, entry in self.entries.items()}
-            self.medicine.create_medicine(data["name"], data["dosage"], float(data["price"]))
-            messagebox.showinfo("Success", "Medicine added successfully.")
+            if self.is_update_mode:
+                self.medicine.update_medicine(self.selected_item, data["name"], data["dosage"], float(data["price"]))
+                messagebox.showinfo("Success", "Medicine updated successfully.")
+                self.add_button.config(text="Add Medicine", command=self.add_medicine)
+                self.is_update_mode = False
+            else:
+                self.medicine.create_medicine(data["name"], data["dosage"], float(data["price"]))
+                messagebox.showinfo("Success", "Medicine added successfully.")
+
             self.load_medicine()
         except Exception as e:
             messagebox.showerror("Error", str(e))
@@ -125,10 +137,14 @@ class GUIMedicine:
         selected_item = self.table.focus()
         if selected_item:
             self.selected_item = self.table.item(selected_item, "values")[0]
-            self.delete_button.config(state="normal")  # Enable delete button
+            self.add_button.config(text="Update Medicine", command=self.add_medicine)
+            self.is_update_mode = True
+            self.delete_button.config(state="normal")
         else:
             self.selected_item = None
-            self.delete_button.config(state="disabled")  # Disable delete button
+            self.add_button.config(text="Add Medicine", command=self.add_medicine)
+            self.is_update_mode = False
+            self.delete_button.config(state="disabled")
 
     def delete_medicine(self):
         if self.selected_item:
@@ -139,7 +155,6 @@ class GUIMedicine:
                 self.delete_button.config(state="disabled")
         else:
             messagebox.showwarning("No Selection", "Please select a medicine to delete.")
-
 
 if __name__ == "__main__":
     db = HospitalDB()
