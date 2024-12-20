@@ -2,7 +2,6 @@ import sqlite3
 from tkinter import *
 from tkinter import ttk, messagebox
 
-
 class DoctorManagementApp:
     def __init__(self, root):
         self.root = root
@@ -72,12 +71,12 @@ class DoctorManagementApp:
         ]
 
         for i, (label, var) in enumerate(fields):
-            Label(form_frame, text=label, bg="#2C3E50", fg="white", font=("Helvetica", 12)).grid(row=i, column=0, padx=10, pady=5, sticky=W )
+            Label(form_frame, text=label, bg="#2C3E50", fg="white", font=("Helvetica", 12)).grid(row=i, column=0, padx=10, pady=5, sticky=W)
             if label == "Gender":
-                widget = ttk.Combobox(form_frame, textvariable=var, state="readonly", width=20, font=("Helvetica", 12))
+                widget = ttk.Combobox(form_frame, textvariable=var, state="readonly", width=23, font=("Helvetica", 12))
                 widget["values"] = ("Male", "Female", "Other")
             elif label == "Blood Group":
-                widget = ttk.Combobox(form_frame, textvariable=var, state="readonly", width=20, font=("Helvetica", 12))
+                widget = ttk.Combobox(form_frame, textvariable=var, state="readonly", width=23, font=("Helvetica", 12))
                 widget["values"] = ("A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-")
             else:
                 widget = Entry(form_frame, textvariable=var, width=25, font=("Helvetica", 12))
@@ -88,15 +87,21 @@ class DoctorManagementApp:
             bg="#1ABC9C", fg="white", font=("Helvetica", 12, "bold"), cursor="hand2"
         )
         self.action_button.grid(row=len(fields), columnspan=2, pady=10)
+        self.add_hover_effect(self.action_button, "#16A085", "#1ABC9C")
 
-        Button(
+        self.delete_button = Button(
             form_frame, text="Delete Doctor", command=self.delete_doctor,
-            bg="#E74C3C", fg="white", font=("Helvetica", 12, "bold"), cursor="hand2"
-        ).grid(row=len(fields) + 1, columnspan=2, pady=10)
+            bg="#E74C3C", fg="white", font=("Helvetica", 12, "bold"), cursor="hand2", state=DISABLED
+        )
+        self.delete_button.grid(row=len(fields) + 1, columnspan=2, pady=10)
+        self.add_hover_effect(self.delete_button, "#C0392B", "#E74C3C")
 
+    def add_hover_effect(self, button, hover_color, default_color):
+        button.bind("<Enter>", lambda e: button.config(bg=hover_color))
+        button.bind("<Leave>", lambda e: button.config(bg=default_color))
 
     def create_table_frame(self):
-        table_frame = Frame(self.root, bg="#ECF0F1" , width=500)
+        table_frame = Frame(self.root, bg="#ECF0F1", width=500)
         table_frame.pack(side=RIGHT, fill=BOTH, expand=True)
 
         style = ttk.Style()
@@ -187,6 +192,7 @@ class DoctorManagementApp:
                 for var, value in zip(fields, values[1:]):
                     var.set(value)
                 self.action_button.config(text="Update")
+                self.delete_button.config(state=NORMAL)
 
     def validate_age(self, *args):
         if self.age_var.get() and not self.age_var.get().isdigit():
@@ -199,7 +205,8 @@ class DoctorManagementApp:
                     self.certificates_var, self.education_var, self.specialty_var]:
             var.set("")
         self.selected_id = None
-        self.action_button.config(text="Add")
+        self.action_button.config(text="Add Doctor")
+        self.delete_button.config(state=DISABLED)
 
     def all_fields_filled(self):
         return all(var.get() for var in [
@@ -215,7 +222,6 @@ class DoctorManagementApp:
             self.joined_var.get(), self.certificates_var.get(),
             self.education_var.get(), self.specialty_var.get()
         )
-
 
 if __name__ == "__main__":
     root = Tk()

@@ -2,7 +2,6 @@ import sqlite3
 from tkinter import *
 from tkinter import ttk, messagebox
 
-
 class NurseApp:
     def __init__(self, root):
         self.root = root
@@ -10,9 +9,12 @@ class NurseApp:
         self.root.geometry("1500x1000")
         self.root.configure(bg="#34495E")
 
+        # Database connection
         self.conn = sqlite3.connect("DB/nurse.db")
         self.cursor = self.conn.cursor()
         self.create_table()
+
+        # Variables to hold form data
         self.selected_id = None
         self.name_var = StringVar()
         self.phone_var = StringVar()
@@ -24,27 +26,29 @@ class NurseApp:
         self.certificates_var = StringVar()
         self.education_var = StringVar()
 
+        # Initialize UI components
         self.create_form_frame()
-
         self.create_table_frame()
-
         self.fetch_data()
 
+        # Validate age input (only numbers)
         self.age_var.trace("w", self.validate_age)
 
     def create_table(self):
-        self.cursor.execute("""CREATE TABLE IF NOT EXISTS Nurses (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            phone TEXT,
-            gender TEXT,
-            age INTEGER,
-            blood_group TEXT,
-            address TEXT,
-            joined TEXT,
-            certificates TEXT,
-            education TEXT
-        )""")
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS Nurses (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT,
+                phone TEXT,
+                gender TEXT,
+                age INTEGER,
+                blood_group TEXT,
+                address TEXT,
+                joined TEXT,
+                certificates TEXT,
+                education TEXT
+            )
+        """)
         self.conn.commit()
 
     def create_form_frame(self):
@@ -68,17 +72,16 @@ class NurseApp:
             if label_text == "Gender":
                 widget = ttk.Combobox(form_frame, textvariable=var, font=("Helvetica", 12), width=23, state="readonly")
                 widget['values'] = ("Male", "Female", "Other")
+            elif label_text == "Blood Group":
+                widget = ttk.Combobox(form_frame, values=["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"], state="readonly", width=35)
             else:
                 widget = Entry(form_frame, textvariable=var, font=("Helvetica", 12), width=25)
             widget.grid(row=i, column=1, pady=5, padx=10)
 
-        self.action_button = Button(
-            form_frame, text="Add nurse", font=("Helvetica", 12, "bold"), bg="#1ABC9C", fg="white", cursor="hand2", command=self.add_or_update_nurse
-        )
+        self.action_button = self.create_button(form_frame, "Add nurse", "#1ABC9C", self.add_or_update_nurse)
         self.action_button.grid(row=len(fields), columnspan=2, pady=10)
-        Button(
-            form_frame, text="Delete nurse", font=("Helvetica", 12, "bold"), bg="#E74C3C", fg="white", cursor="hand2", command=self.delete_nurse
-        ).grid(row=len(fields) + 1, columnspan=2, pady=10)
+        self.delete_button = self.create_button(form_frame, "Delete nurse", "#E74C3C", self.delete_nurse, state=DISABLED)
+        self.delete_button.grid(row=len(fields) + 1, columnspan=2, pady=10)
 
     def create_table_frame(self):
         table_frame = Frame(self.root, bg="#e3f2fd")
@@ -100,6 +103,19 @@ class NurseApp:
 
         self.nurse_table.bind("<ButtonRelease-1>", self.load_selected_row)
 
+    def create_button(self, parent, text, color, command, state=NORMAL):
+        button = Button(
+            parent, text=text, font=("Helvetica", 12, "bold"), bg=color, fg="white", cursor="hand2",
+            command=command, state=state
+        )
+        button.bind("<Enter>", lambda e, b=button: b.config(bg=self.darken_color(color)))
+        button.bind("<Leave>", lambda e, b=button: b.config(bg=color))
+        return button
+
+    def darken_color(self, color):
+        color_dict = {"#1ABC9C": "#16A085", "#E74C3C": "#C0392B"}
+        return color_dict.get(color, color)
+
     def add_or_update_nurse(self):
         if self.selected_id:
             self.update_nurse()
@@ -107,41 +123,31 @@ class NurseApp:
             self.add_nurse()
 
     def add_nurse(self):
-        if not all([self.name_var.get(), self.phone_var.get(), self.gender_var.get(), self.age_var.get(),
-                    self.blood_group_var.get(), self.address_var.get(), self.joined_var.get(),
-                    self.certificates_var.get(), self.education_var.get()]):
-            messagebox.showerror("Error", "All fields must be filled.")
+        if not self.validate_form():
             return
-
+        
         try:
-            self.cursor.execute("""
-                INSERT INTO Nurses (name, phone, gender, age, blood_group, address, joined, certificates, education)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
+            self.cursor.execute("""INSERT INTO Nurses (name, phone, gender, age, blood_group, address, joined, certificates, education)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", (
                 self.name_var.get(), self.phone_var.get(), self.gender_var.get(),
                 int(self.age_var.get()) if self.age_var.get().isdigit() else None,
                 self.blood_group_var.get(), self.address_var.get(),
                 self.joined_var.get(), self.certificates_var.get(), self.education_var.get()
             ))
             self.conn.commit()
-            messagebox.showinfo("Success", "nurse added successfully.")
+            messagebox.showinfo("Success", "Nurse added successfully.")
             self.fetch_data()
             self.clear_fields()
         except Exception as e:
             messagebox.showerror("Error", f"Error adding nurse: {e}")
 
     def update_nurse(self):
-        if not all([self.name_var.get(), self.phone_var.get(), self.gender_var.get(), self.age_var.get(),
-                    self.blood_group_var.get(), self.address_var.get(), self.joined_var.get(),
-                    self.certificates_var.get(), self.education_var.get()]):
-            messagebox.showerror("Error", "All fields must be filled.")
+        if not self.validate_form():
             return
 
         try:
-            self.cursor.execute("""
-                UPDATE Nurses SET name = ?, phone = ?, gender = ?, age = ?, blood_group = ?, address = ?, joined = ?, certificates = ?, education = ?
-                WHERE id = ?
-            """, (
+            self.cursor.execute("""UPDATE Nurses SET name = ?, phone = ?, gender = ?, age = ?, blood_group = ?, address = ?, joined = ?, certificates = ?, education = ?
+                                    WHERE id = ?""", (
                 self.name_var.get(), self.phone_var.get(), self.gender_var.get(),
                 int(self.age_var.get()) if self.age_var.get().isdigit() else None,
                 self.blood_group_var.get(), self.address_var.get(),
@@ -149,7 +155,7 @@ class NurseApp:
                 self.selected_id
             ))
             self.conn.commit()
-            messagebox.showinfo("Success", "nurse updated successfully.")
+            messagebox.showinfo("Success", "Nurse updated successfully.")
             self.fetch_data()
             self.clear_fields()
         except Exception as e:
@@ -159,11 +165,11 @@ class NurseApp:
         if self.selected_id:
             self.cursor.execute("DELETE FROM Nurses WHERE id = ?", (self.selected_id,))
             self.conn.commit()
-            messagebox.showinfo("Deleted", "nurse member deleted successfully.")
+            messagebox.showinfo("Deleted", "Nurse deleted successfully.")
             self.fetch_data()
             self.clear_fields()
         else:
-            messagebox.showerror("Error", "No nurse member selected to delete.")
+            messagebox.showerror("Error", "No nurse selected to delete.")
 
     def fetch_data(self):
         self.nurse_table.delete(*self.nurse_table.get_children())
@@ -188,12 +194,28 @@ class NurseApp:
                 self.education_var.set(data[9])
 
                 self.action_button.config(text="Update")
+                self.delete_button.config(state=NORMAL)
 
     def validate_age(self):
         age = self.age_var.get()
         if age and not age.isdigit():
             messagebox.showwarning("Input Error", "Age must be a valid integer.")
             self.age_var.set("")
+
+    def validate_form(self):
+        # Check if all fields are filled
+        # Debugging: Print the field values to check what's empty
+        fields = [
+            self.name_var.get(), self.phone_var.get(), self.gender_var.get(), 
+            self.age_var.get(), self.blood_group_var.get(), self.address_var.get(), 
+            self.joined_var.get(), self.certificates_var.get(), self.education_var.get()
+        ]
+        print("Form Values:", fields)  # Debugging print
+
+        if any(not field.strip() for field in fields):  # Check if any field is empty or contains only whitespace
+            messagebox.showerror("Error", "All fields must be filled.")
+            return False
+        return True
 
     def clear_fields(self):
         self.name_var.set("")
@@ -207,6 +229,7 @@ class NurseApp:
         self.education_var.set("")
         self.selected_id = None
         self.action_button.config(text="Add")
+        self.delete_button.config(state=DISABLED)
 
 
 if __name__ == "__main__":

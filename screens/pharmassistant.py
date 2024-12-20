@@ -78,11 +78,12 @@ class GUIPharmacist:
             "Name", "Phone", "Gender", "Age", "Blood Group", "Address", "Joined Date", "Certificates", "Education"
         ]
         self.entries = {}
-
         for idx, label in enumerate(labels):
             tk.Label(input_frame, text=label, bg="#2C3E50",fg="white", font=("times", 12, "bold")).grid(row=idx, column=0, sticky="e")
             if label == "Gender":
-                entry = ttk.Combobox(input_frame, values=["Male", "Female", "Other"], state="readonly", width=37)
+                entry = ttk.Combobox(input_frame, values=["Male", "Female", "Other"], state="readonly", width=38)
+            elif label =="Blood Group":
+                entry = ttk.Combobox(input_frame, values=["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"], state="readonly", width=38)
             else:
                 entry = tk.Entry(input_frame, width=30, font=("times", 12), relief="solid")
             entry.grid(row=idx, column=1, padx=5, pady=20)
@@ -91,11 +92,11 @@ class GUIPharmacist:
         validate_age = (self.root.register(self.validate_age), '%P')
         self.entries["age"].config(validate="key", validatecommand=validate_age)
 
-        self.add_button = tk.Button(input_frame, text="Add Pharmacist", command=self.add_or_update_pharmacist, bg="#1ABC9C", bd=10, relief="flat",fg="white", activebackground="#1ABC9C", activeforeground="white", font=("times", 10, "bold"), cursor="hand2", state="normal", pady=10)
+        self.add_button = tk.Button(input_frame, text="Add Pharmacist", command=self.add_or_update_pharmacist, bg="#1ABC9C",font=("Helvetica", 12, "bold"), fg="white", cursor="hand2")
         self.add_button.grid(row=len(labels), column=1, pady=10)
 
-        self.delete_button = tk.Button(input_frame, text="Delete ", command=self.delete_selected_pharmacist, bg="#FF9999", bd=10, relief="flat", fg="white",activebackground="#E74C3C", activeforeground="white", font=("times", 10, "bold"), cursor="hand2", state="disabled", pady=10)
-        self.delete_button.grid(row=len(labels) + 1, column=1, pady=10)
+        self.delete_button = tk.Button(input_frame, text="Delete pharmacist", font=("Helvetica", 12, "bold"), bg="#E74C3C", fg="white", cursor="hand2",command=self.delete_selected_pharmacist)
+        self.delete_button.grid(row=len(labels) +1, column=1, pady=10)
 
     def create_table(self):
         self.table = ttk.Treeview(self.root, columns=("ID", "Name", "Phone", "Gender", "Age", "Blood Group", "Address", "Joined Date", "Certificates", "Education"), show="headings", style="Treeview")
@@ -115,12 +116,14 @@ class GUIPharmacist:
 
         self.table.bind("<ButtonRelease-1>", self.on_select)
 
+
     def validate_age(self, input_value):
         return input_value.isdigit() or input_value == ""
 
     def add_or_update_pharmacist(self):
         data = {key: entry.get() for key, entry in self.entries.items()}
         try:
+
             if self.selected_id is None:
                 self.pharm_assistant.create_pharm_assistant(
                     data["name"], data["phone"], data["gender"], int(data["age"]),

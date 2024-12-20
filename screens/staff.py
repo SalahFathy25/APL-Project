@@ -66,6 +66,9 @@ class StaffApp:
             if label_text == "Gender":
                 widget = ttk.Combobox(form_frame, textvariable=var, font=("Helvetica", 12), width=20, state="readonly")
                 widget['values'] = ("Male", "Female", "Other")
+
+            elif label_text =="Blood Group":
+                widget = ttk.Combobox(form_frame, values=["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"], state="readonly", width=30)
             else:
                 widget = Entry(form_frame, textvariable=var, font=("times", 12), width=25, relief=SOLID)
             widget.grid(row=i, column=1, pady=5, padx=10)

@@ -4,6 +4,7 @@ from tkinter import ttk, messagebox
 
 DATABASE = "DB/medicine.db"
 
+
 class HospitalDB:
     def __init__(self, db_name=DATABASE):
         self.conn = sqlite3.connect(db_name)
@@ -53,8 +54,9 @@ class GUIMedicine:
         self.medicine = medicine
         self.root.title("Medicine")
         self.root.geometry("800x600")
-
         self.root.config(bg="#34495E")
+
+        self.selected_item = None
 
         self.create_input_fields()
         self.create_table()
@@ -67,18 +69,23 @@ class GUIMedicine:
         self.entries = {}
 
         for idx, label in enumerate(labels):
-            tk.Label(input_frame, text=label, bg="#2C3E50",foreground="white", font=("times", 12,"bold")).grid(row=idx, column=0)
+            tk.Label(input_frame, text=label, bg="#2C3E50", foreground="white", font=("times", 12, "bold")).grid(row=idx, column=0)
             if label == "Dosage":
-                entry = ttk.Combobox(input_frame, values=["Tablets", "Capsules", "Poders", "Oral Solution", "Injectable Solutions"], state="readonly", width=37)
+                entry = ttk.Combobox(input_frame, values=["Tablets", "Capsules", "Powders", "Oral Solution", "Injectable Solutions"], state="readonly", width=37)
             else:
                 entry = tk.Entry(input_frame, width=30, font=("times", 12), relief="solid")
             entry.grid(row=idx, column=1, padx=5, pady=20)
             self.entries[label.lower().replace(" ", "_")] = entry
 
         self.add_button = tk.Button(input_frame, text="Add Medicine", command=self.add_medicine, bg="#89CFF0", bd=10,
-                                    relief="flat", activebackground="#E0FAFF", activeforeground="white",
+                                    relief="flat", activebackground="#E0FAFF", fg="white",
                                     font=("times", 12, "bold"), cursor="hand2", state="normal", pady=5)
         self.add_button.grid(row=len(labels), column=1, pady=10)
+
+        self.delete_button = tk.Button(input_frame, text="Delete Medicine", command=self.delete_medicine, bg="#FF6347", bd=10,
+                                       relief="flat", activebackground="#FF7F7F", fg="white", font=("times", 12, "bold"),
+                                       cursor="hand2", state="disabled", pady=5)
+        self.delete_button.grid(row=len(labels) + 1, column=1, pady=10)
 
     def create_table(self):
         self.table = ttk.Treeview(self.root, columns=("ID", "Name", "Dosage", "Price"), show="headings")
@@ -96,7 +103,7 @@ class GUIMedicine:
 
         self.load_medicine()
 
-        self.table.bind("<Button-1>", self.handle_delete)
+        self.table.bind("<ButtonRelease-1>", self.on_row_select)
 
     def add_medicine(self):
         try:
@@ -114,18 +121,24 @@ class GUIMedicine:
         for row in self.medicine.get_all_medicines():
             self.table.insert("", tk.END, values=row)
 
-    def handle_delete(self, event):
-        item = self.table.identify_row(event.y)
-        column = self.table.identify_column(event.x)
+    def on_row_select(self, event):
+        selected_item = self.table.focus()
+        if selected_item:
+            self.selected_item = self.table.item(selected_item, "values")[0]
+            self.delete_button.config(state="normal")  # Enable delete button
+        else:
+            self.selected_item = None
+            self.delete_button.config(state="disabled")  # Disable delete button
 
-        if column == "#1":
-            values = self.table.item(item, "values")
-            if values:
-                medicine_id = values[0]
-                confirm = messagebox.askyesno("Confirm", "Delete medicine with ID {medicine_id}?")
-                if confirm:
-                    self.medicine.delete_medicine(medicine_id)
-                    self.load_medicine()
+    def delete_medicine(self):
+        if self.selected_item:
+            confirm = messagebox.askyesno("Confirm", f"Do you really want to delete medicine with ID {self.selected_item}?")
+            if confirm:
+                self.medicine.delete_medicine(self.selected_item)
+                self.load_medicine()
+                self.delete_button.config(state="disabled")
+        else:
+            messagebox.showwarning("No Selection", "Please select a medicine to delete.")
 
 
 if __name__ == "__main__":

@@ -12,133 +12,12 @@ class HospitalDB:
 
     def create_tables(self):
         self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS Hospital (
-                h_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                h_name TEXT NOT NULL,
-                h_address TEXT
-            )
-        """)
-
-        self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS Patient (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                phone TEXT,
-                gender TEXT DEFAULT 'Unknown',
-                age INTEGER,
-                bloodgroup TEXT,
-                address TEXT
-            )
-        """)
-
-        self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS Staff (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                phone TEXT,
-                gender TEXT DEFAULT 'Unknown',
-                age INTEGER,
-                bloodgroup TEXT,
-                address TEXT,
-                joined TEXT,
-                certificates TEXT,
-                education TEXT
-            )
-        """)
-
-        self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS Doctor (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                phone TEXT,
-                gender TEXT DEFAULT 'Unknown',
-                age INTEGER,
-                bloodgroup TEXT,
-                address TEXT,
-                joined TEXT,
-                certificates TEXT,
-                education TEXT,
-                specialty TEXT
-            )
-        """)
-
-        self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS Nurse (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                phone TEXT,
-                gender TEXT DEFAULT 'Unknown',
-                age INTEGER,
-                bloodgroup TEXT,
-                address TEXT,
-                joined TEXT,
-                certificates TEXT,
-                education TEXT
-            )
-        """)
-
-        self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS Medicine (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                dosage TEXT,
-                price REAL
-            )
-        """)
-
-        self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS PharmAssistant (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                phone TEXT,
-                gender TEXT DEFAULT 'Unknown',
-                age INTEGER,
-                bloodgroup TEXT,
-                address TEXT,
-                joined TEXT,
-                certificates TEXT,
-                education TEXT
-            )
-        """)
-
-        self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS LabAssistant (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                phone TEXT,
-                gender TEXT DEFAULT 'Unknown',
-                age INTEGER,
-                bloodgroup TEXT,
-                address TEXT,
-                joined TEXT,
-                certificates TEXT,
-                education TEXT
-            )
-        """)
-
-        self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS Receptionist (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                phone TEXT,
-                gender TEXT DEFAULT 'Unknown',
-                age INTEGER,
-                bloodgroup TEXT,
-                address TEXT,
-                joined TEXT,
-                certificates TEXT,
-                education TEXT
-            )
-        """)
-
-        self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS LabTest (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
                 price REAL
             )
         """)
-
         self.conn.commit()
 
     def execute_query(self, query, params=()):
@@ -177,8 +56,9 @@ class GUILabTest:
         self.labTest = labTest
         self.root.title("Lab Test Management")
         self.root.geometry("1500x1000")
-
         self.root.config(bg="#2C3E50")
+
+        self.selected_lab_test_id = None
 
         self.create_input_fields()
         self.create_table()
@@ -198,9 +78,14 @@ class GUILabTest:
             self.entries[label.lower().replace(" ", "_")] = entry
 
         self.add_button = tk.Button(input_frame, text="Add Test", command=self.add_lab_test, bg="#1ABC9C", bd=10,
-                                    relief="flat", activebackground="#E0FAFF", activeforeground="white",foreground="white",
+                                    relief="flat", activebackground="#E0FAFF", activeforeground="white", foreground="white",
                                     font=("Helvetica", 12, "bold"), cursor="hand2", state="normal", pady=10)
         self.add_button.grid(row=len(labels), column=1, pady=10)
+
+        self.delete_button = tk.Button(input_frame, text="Delete Test", command=self.delete_lab_test, bg="#E74C3C", bd=10,
+                                        relief="flat", activebackground="#E0FAFF", activeforeground="white", foreground="white",
+                                        font=("Helvetica", 12, "bold"), cursor="hand2", state="disabled", pady=10)
+        self.delete_button.grid(row=len(labels) + 1, column=1, pady=10)
 
     def create_table(self):
         self.table = ttk.Treeview(self.root, columns=("ID", "Name", "Price"), show="headings", style="Treeview")
@@ -234,20 +119,27 @@ class GUILabTest:
         for row in self.labTest.get_all_lab_tests():
             self.table.insert("", tk.END, values=row)
 
-        self.table.bind("<Button-1>", self.handle_delete)
+        self.table.bind("<ButtonRelease-1>", self.handle_row_select)
 
-    def handle_delete(self, event):
+    def handle_row_select(self, event):
         item = self.table.identify('item', event.x, event.y)
-        column = self.table.identify_column(event.x)
-
-        if column == '#1':
+        if item:
             values = self.table.item(item, "values")
             if values:
-                lab_test_id = values[0]
-                confirm = messagebox.askyesno("Confirm", "Delete lab test with ID {lab_test_id}?")
-                if confirm:
-                    self.labTest.delete_lab_test(lab_test_id)
-                    self.load_lab_tests()
+                self.selected_lab_test_id = values[0]
+                self.delete_button.config(state="normal")
+            else:
+                self.selected_lab_test_id = None
+                self.delete_button.config(state="disabled")
+
+    def delete_lab_test(self):
+        if self.selected_lab_test_id:
+            confirm = messagebox.askyesno("Confirm", f"Delete lab test with ID {self.selected_lab_test_id}?")
+            if confirm:
+                self.labTest.delete_lab_test(self.selected_lab_test_id)
+                self.selected_lab_test_id = None
+                self.delete_button.config(state="disabled")
+                self.load_lab_tests()
 
 if __name__ == "__main__":
     db = HospitalDB()

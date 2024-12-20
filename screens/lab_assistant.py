@@ -1,6 +1,7 @@
 import sqlite3
 import tkinter as tk
 from tkinter import ttk, messagebox
+
 DATABASE = "DB/lab_assistant.db"
 
 class HospitalDB:
@@ -90,23 +91,32 @@ class GUILabAssistant:
         validate_age = (self.root.register(self.is_valid_age), "%P")
 
         for idx, label in enumerate(labels):
-            tk.Label(input_frame, text=label, bg="#2C3E50", fg="white", font=("times", 12, "bold")).grid(row=idx, column=0, sticky="e")
+            tk.Label(input_frame, text=label, bg="#2C3E50",fg="white", font=("times", 12, "bold")).grid(row=idx, column=0, sticky="e")
             if label == "Gender":
-                entry = ttk.Combobox(input_frame, values=["Male", "Female", "Other"], state="readonly", width=31)
-            elif label == "Age":
-                entry = tk.Entry(input_frame, width=26, font=("times", 12), relief="solid", validate="key", validatecommand=validate_age)
+                entry = ttk.Combobox(input_frame, values=["Male", "Female", "Other"], state="readonly", width=23)
             elif label == "Blood Group":
-                entry = ttk.Combobox(input_frame, values=["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], state="readonly", width=31)
+                entry = ttk.Combobox(input_frame, values=["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"], state="readonly", width=23)
+            elif label == "Age":
+                entry = tk.Entry(input_frame, width=20, font=("times", 12), relief="solid", validate="key", validatecommand=validate_age)
             else:
-                entry = tk.Entry(input_frame, width=26, font=("times", 12), relief="solid")
+                entry = tk.Entry(input_frame, width=20, font=("times", 12), relief="solid")
             entry.grid(row=idx, column=1, padx=5, pady=20)
             self.entries[label.lower().replace(" ", "_")] = entry
 
         self.add_button = tk.Button(input_frame, text="Add Lab Assistant", command=self.add_or_update_lab_assistant, bg="#1ABC9C", bd=5, relief="flat", activebackground="#E0FAFF", fg="white", font=("times", 10, "bold"), cursor="hand2", pady=5, padx=5)
         self.add_button.grid(row=len(labels), column=1, pady=10)
 
-        self.delete_button = tk.Button(input_frame, text="Delete Lab Assistant", command=self.delete_selected_lab_assistant, bg="#E74C3C", bd=5, relief="flat", activebackground="#F5B7B1", fg="white", font=("times", 10, "bold"), cursor="hand2", pady=5, padx=5)
+        self.delete_button = tk.Button(input_frame, text="Delete Lab Assistant", command=self.delete_selected_lab_assistant, bg="#E74C3C", bd=5, relief="flat", activebackground="#F5B7B1", fg="white", font=("times", 10, "bold"), cursor="hand2", pady=5, padx=5, state="disabled")
         self.delete_button.grid(row=len(labels) + 1, column=1, pady=10)
+
+        self.add_button.bind("<Enter>", lambda e: self.on_hover_button(self.add_button, "#16A085"))
+        self.add_button.bind("<Leave>", lambda e: self.on_hover_button(self.add_button, "#1ABC9C"))
+
+        self.delete_button.bind("<Enter>", lambda e: self.on_hover_button(self.delete_button, "#C0392B"))
+        self.delete_button.bind("<Leave>", lambda e: self.on_hover_button(self.delete_button, "#E74C3C"))
+
+    def on_hover_button(self, button, color):
+        button.config(bg=color)
 
     def is_valid_age(self, value):
         if value == "" or value.isdigit():
@@ -205,8 +215,7 @@ class GUILabAssistant:
         self.entries["gender"].set(values[3])
         self.entries["age"].delete(0, tk.END)
         self.entries["age"].insert(0, values[4])
-        self.entries["blood_group"].delete(0, tk.END)
-        self.entries["blood_group"].insert(0, values[5])
+        self.entries["blood_group"].set(values[5])
         self.entries["address"].delete(0, tk.END)
         self.entries["address"].insert(0, values[6])
         self.entries["joined_date"].delete(0, tk.END)
@@ -217,12 +226,14 @@ class GUILabAssistant:
         self.entries["education"].insert(0, values[9])
 
         self.add_button.config(text="Update Lab Assistant")
+        self.delete_button.config(state="normal")
 
     def reset_form(self):
         self.selected_id = None
         for entry in self.entries.values():
             entry.delete(0, tk.END)
         self.add_button.config(text="Add Lab Assistant")
+        self.delete_button.config(state="disabled")
 
 if __name__ == "__main__":
     db = HospitalDB()

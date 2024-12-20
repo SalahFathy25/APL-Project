@@ -3,7 +3,6 @@ import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
 
-##اعمل bloodGroup كويس
 ## اعمل تأثيرات لكل الزراير
 
 ##Hospital
@@ -48,11 +47,11 @@ title_label = tk.Label(
 title_label.grid(row=0, column=0, columnspan=3, pady=(10, 20))
 
 gui_files = [
-    ("Doctor Management", "screens\doctor.py", "icons/doctor.png"),
-    ("Hospital Management", "screens\hospital_management.py", "icons/hospital.png"),
-    ("Lab Assistant Management", "screens\lab_assistant.py", "icons/lab_assistant.png"),
-    ("Lab Test Management", "screens\lab_test.py", "icons/lab_test.png"),
-    ("Medicine Management", "screens\medicine.py", "icons/medicine.png"),
+    ("Doctor Management", "screens\doctor.py", "icons/doctor.png"),##done done
+    ("Hospital Management", "screens\hospital_management.py", "icons/hospital.png"), ##done done
+    ("Lab Assistant Management", "screens\lab_assistant.py", "icons/lab_assistant.png"),##done done
+    ("Lab Test Management", "screens\lab_test.py", "icons/lab_test.png"),##done done
+    ("Medicine Management", "screens\medicine.py", "icons/medicine.png"),##done done
     ("Nurse Management", "screens\screenNurse.py", "icons/nurse.png"),
     ("Patient Management", "screens\patient.py", "icons/patient.png"),
     ("PharmAssistant Management", "screens\pharmassistant.py", "icons/patient.png"),

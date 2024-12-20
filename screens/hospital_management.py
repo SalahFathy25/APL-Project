@@ -4,7 +4,10 @@ from tkinter import messagebox, ttk
 from tkinter.ttk import Style
 
 BUTTON_COLOR = '#1ABC9C'
-HOVER_COLOR = '#1ABC9A'
+HOVER_COLOR = '#16A085'
+DISABLED_COLOR = '#BDC3C7'
+DELETE_BUTTON_COLOR = '#E74C3C'
+DELETE_HOVER_COLOR = '#C0392B'
 FONT = ("Helvetica", 10, 'bold')
 LABEL_FONT = ("Arial", 10, 'bold')
 
@@ -59,13 +62,12 @@ class HospitalApp(tk.Tk):
         self.hospital_db = db
         self.hospital = Hospital(db)
 
+        self.selected_item = None
         self.create_widgets()
         self.populate_table()
 
     def create_widgets(self):
         self.config(bg='#2C3E50')
-
-        self.grid_rowconfigure(6, weight=1)
 
         self.label_name = tk.Label(self, text="Hospital Name:", bg='#2C3E50', fg="white", font=LABEL_FONT, width=20)
         self.label_name.grid(row=0, column=0, pady=2, sticky="n", padx=5)
@@ -79,17 +81,16 @@ class HospitalApp(tk.Tk):
         self.entry_address = tk.Entry(self, font=("Arial", 14), width=20, bd=3)
         self.entry_address.grid(row=1, column=1, pady=2, padx=5, sticky="n")
 
-        self.button_create = self.create_styled_button("Create Hospital", self.create_hospital)
-        self.button_create.grid(row=2, column=0, columnspan=2, pady=10, padx=10, sticky="n")
+        self.button_add = self.create_styled_button("Add Hospital", self.add_or_update_hospital)
+        self.button_add.grid(row=2, column=0, columnspan=2, pady=10, padx=10, sticky="n")
 
-        self.button_update = self.create_styled_button("Update Hospital", self.update_hospital)
-        self.button_update.grid(row=3, column=0, columnspan=2, pady=10, padx=10, sticky="n")
-
-        self.button_delete = self.create_styled_button("Delete Hospital", self.delete_hospital)
-        self.button_delete.grid(row=4, column=0, columnspan=2, pady=10, padx=10, sticky="n")
+        self.button_delete = self.create_styled_button("Delete Hospital", self.delete_hospital,
+                                                        bg_color=DELETE_BUTTON_COLOR, hover_color=DELETE_HOVER_COLOR)
+        self.button_delete.config(state="disabled", bg=DISABLED_COLOR)
+        self.button_delete.grid(row=3, column=0, columnspan=2, pady=10, padx=10, sticky="n")
 
         self.next_page_button = self.create_styled_button("More Features", self.show_more_features)
-        self.next_page_button.grid(row=5, column=0, columnspan=2, pady=10, padx=10, sticky="n")
+        self.next_page_button.grid(row=4, column=0, columnspan=2, pady=10, padx=10, sticky="n")
 
         style = Style()
         style.configure("Treeview.Heading", font=("Arial", 12, "bold"), background="#1ABC9C", foreground="black")
@@ -99,7 +100,7 @@ class HospitalApp(tk.Tk):
         self.tree = ttk.Treeview(self, columns=("Name", "Address"), show='headings', style="Treeview")
         self.tree.heading("Name", text="Hospital Name")
         self.tree.heading("Address", text="Hospital Address")
-        self.tree.grid(row=6, column=0, columnspan=2, pady=5, sticky="ew", padx=15)
+        self.tree.grid(row=5, column=0, columnspan=2, pady=5, sticky="ew", padx=15)
 
         self.tree.tag_configure("evenrow", background="#f2f2f2")
         self.tree.tag_configure("oddrow", background="#ffffff")
@@ -108,62 +109,49 @@ class HospitalApp(tk.Tk):
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
-    def create_styled_button(self, text, command):
-        button = tk.Button(self, text=text, command=command, bg=BUTTON_COLOR, activebackground=HOVER_COLOR, fg="white",
-                            font=("Arial", 10, 'bold'), padx=6, pady=3, relief='raised', bd=2, width=30)
-        button.bind("<Enter>", lambda event: button.configure(bg=HOVER_COLOR))
-        button.bind("<Leave>", lambda event: button.configure(bg=BUTTON_COLOR))
+    def create_styled_button(self, text, command, bg_color=BUTTON_COLOR, hover_color=HOVER_COLOR):
+        button = tk.Button(self, text=text, command=command, bg=bg_color, activebackground=hover_color, fg="white",
+                            font=("Arial", 10, 'bold'), padx=6, pady=3, relief='raised', bd=2, width=30, cursor="hand2")
+        button.bind("<Enter>", lambda event: button.configure(bg=hover_color))
+        button.bind("<Leave>", lambda event: button.configure(bg=bg_color))
         return button
 
     def on_tree_select(self, event):
-        selected_item = self.tree.selection()[0]
-        hospital_data = self.tree.item(selected_item, "values")
-        self.entry_name.delete(0, tk.END)
-        self.entry_name.insert(0, hospital_data[0])
-        self.entry_address.delete(0, tk.END)
-        self.entry_address.insert(0, hospital_data[1])
+        selected_items = self.tree.selection()
+        if selected_items:
+            self.selected_item = selected_items[0]
+            hospital_data = self.tree.item(self.selected_item, "values")
+            self.entry_name.delete(0, tk.END)
+            self.entry_name.insert(0, hospital_data[0])
+            self.entry_address.delete(0, tk.END)
+            self.entry_address.insert(0, hospital_data[1])
+            self.button_add.config(text="Update Hospital")
+            self.button_delete.config(state="normal", bg=DELETE_BUTTON_COLOR)
+        else:
+            self.clear_fields()
 
-    def create_hospital(self):
+    def add_or_update_hospital(self):
         name = self.entry_name.get()
         address = self.entry_address.get()
-        if name and address:
-            self.hospital.create_hospital(name, address)
-            self.populate_table()
-            self.clear_fields()
-        else:
+        if not name or not address:
             messagebox.showerror("Input Error", "Please provide both name and address.")
+            return
 
-    def update_hospital(self):
-        selected_item = self.tree.selection()
-        if selected_item:
-            original_hospital_data = self.tree.item(selected_item[0], "values")
-            original_name = original_hospital_data[0]
-            original_address = original_hospital_data[1]
-
-            new_name = self.entry_name.get()
-            new_address = self.entry_address.get()
-
-            if new_name or new_address:
-                updated_name = new_name if new_name else original_name
-                updated_address = new_address if new_address else original_address
-
-                self.hospital.update_hospital(original_name, updated_name, updated_address)
-
-                self.populate_table()
-                self.clear_fields()
-            else:
-                messagebox.showerror("Input Error", "Please provide a new name or address to update.")
+        if self.button_add["text"] == "Add Hospital":
+            self.hospital.create_hospital(name, address)
         else:
-            messagebox.showerror("Selection Error", "Please select a hospital to update.")
+            original_name = self.tree.item(self.selected_item, "values")[0]
+            self.hospital.update_hospital(original_name, name, address)
+
+        self.populate_table()
+        self.clear_fields()
 
     def delete_hospital(self):
-        name = self.entry_name.get()
-        if name:
-            self.hospital.delete_hospital(name)
+        if self.selected_item:
+            hospital_name = self.tree.item(self.selected_item, "values")[0]
+            self.hospital.delete_hospital(hospital_name)
             self.populate_table()
             self.clear_fields()
-        else:
-            messagebox.showerror("Input Error", "Please provide a hospital name to delete.")
 
     def populate_table(self):
         for row in self.tree.get_children():
@@ -179,10 +167,13 @@ class HospitalApp(tk.Tk):
     def clear_fields(self):
         self.entry_name.delete(0, tk.END)
         self.entry_address.delete(0, tk.END)
+        self.button_add.config(text="Add Hospital")
+        self.button_delete.config(state="disabled", bg=DISABLED_COLOR)
 
     def on_closing(self):
         self.hospital_db.close()
         self.destroy()
+
 
 if __name__ == "__main__":
     db = HospitalDB()
